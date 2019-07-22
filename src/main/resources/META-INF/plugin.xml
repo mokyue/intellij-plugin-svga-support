@@ -1,0 +1,31 @@
+<idea-plugin>
+    <id>cc.moky.intellij.plugin.svga-support</id>
+    <name>SVGA Support</name>
+    <category>Viewer</category>
+    <vendor email="mokyue@163.com" url="https://github.com/mokyue">Moky</vendor>
+    <depends>com.intellij.modules.lang</depends>
+    <description><![CDATA[
+<h1><strong>SVGA Support Plugin</strong></h1>
+<br/>
+<a href="https://github.com/mokyue/intellij-plugin-svga-support">Source</a>&nbsp|&nbsp
+<a href="https://github.com/mokyue/intellij-plugin-svga-support/issues">Issues</a>&nbsp|&nbsp
+<a href="http://svga.io/en/index.html">SVGA Homepage</a>
+<br/><br/>
+<strong>The Latest Animation Format</strong>
+<ul>
+    <p>SVGA is a cross platform animation format. Furthermore, SVGA is also a perfect solution for creating animation in cooperation with designers and developers. SVGA includes SVGAConverter and SVGAPlayer. Designers aim at the design of excellent visual effect and animation content, then export SVGA file by SVGAConverter. Developers use SVGAPlayer to play animation without extra coding. SVGAPlayer is available in different platform including iOS, Android, Web. <a href="http://svga.io/en/integrated.html">>> Getting Started</a></p>
+</ul>
+<br/>
+<strong>Why SVGA？</strong>
+<ul>
+    <li>Friendly to the Developer - The convenient SDK enables SVGA to run on different platforms. The integration step is easy and easy.</li>
+    <li>Friendly to the Designer - Designers can use After Effects or Animate CC (Flash) for animation design, and SVGA can support most of them. Animation files can be converted to SVGA file by using the tools.</li>
+    <li>Cost-Effective - The smaller animation files, the higher performance animation play will provide, the more realistic animation effects will be.</li>
+</ul>]]></description>
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceInterface="cc.moky.intellij.plugin.svga.SvgaFileTypeManager"
+                            serviceImplementation="cc.moky.intellij.plugin.svga.SvgaFileTypeManagerImp"/>
+        <fileEditorProvider implementation="cc.moky.intellij.plugin.svga.SvgaFileEditorProvider"/>
+        <fileTypeFactory implementation="cc.moky.intellij.plugin.svga.SvgaFileTypeFactory"/>
+    </extensions>
+</idea-plugin>

@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.9'
+}
+
+intellij {
+    version '2018.2.5'
+}
+
+group 'cc.moky.intellij.plugin'
+version pluginVersion
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+patchPluginXml {
+    sinceBuild customSinceBuild
+    untilBuild customUntilBuild
+    changeNotes """
+<strong>Changes in version 1.0.0:</strong>
+<ul>
+    <li>Created SVGA support plugin for IntelliJ IDEA</li>
+</ul>
+"""
+}
