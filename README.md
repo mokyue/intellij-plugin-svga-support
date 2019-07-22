@@ -1,3 +1,3 @@
-# IntelliJ Idea plugin SVGA animation file viewer support.
+# SVGA viewer plugin support for IntelliJ IDEA
 
 ## To be continue...
