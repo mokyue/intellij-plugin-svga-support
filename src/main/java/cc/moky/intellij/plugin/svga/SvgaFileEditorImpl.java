@@ -37,9 +37,10 @@ import java.util.Base64;
 final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor {
 
     private static final String NAME = "SVGA File Editor";
-    private static final String JS_SCRIPT_STUFF = "{JS_SCRIPT}";
+    private static final String CSS_SCRIPT_STUFF = "{CSS_STUFF}";
+    private static final String JS_SCRIPT_STUFF = "{JS_SCRIPT_STUFF}";
     private static final String SVGA_DATA_STUFF = "{SVGA_DATA_STUFF}";
-    private static final String BACKGROUND_COLOR_STUFF = "{BACKGROUND_COLOR_STUFF}";
+    private static final String BACKGROUND_COLOR_STUFF = "#{BACKGROUND_COLOR_STUFF}";
     private final VirtualFile mFile;
 
     SvgaFileEditorImpl(@NotNull Project project, @NotNull VirtualFile file) {
@@ -87,12 +88,16 @@ final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor 
     private String processHTMLContent() {
         String htmlContent = IOUtil.getFileContent("htm/player.htm");
         if (htmlContent != null) {
+            String cssContent = processCssContent("htm/player.css");
+            if (cssContent != null) {
+                htmlContent = htmlContent.replace(CSS_SCRIPT_STUFF, cssContent);
+            }
             String jsContent = String.format("%s\n%s\n%s", processJsContent("js/jszip.min.js"),
                     processJsContent("js/svga.min.js"), processJsContent("js/main.js"));
+            htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, jsContent);
             Color themeBgColor = JBColor.background().brighter();
             htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
                     themeBgColor.getRed(), themeBgColor.getGreen(), themeBgColor.getBlue()));
-            htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, jsContent);
             htmlContent = htmlContent.replace(SVGA_DATA_STUFF, String.format("data:svga/2.0;base64,%s", fileToBase64(mFile.getPath())));
         }
         return htmlContent;
@@ -102,6 +107,14 @@ final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor 
         String jsContent = IOUtil.getFileContent(path);
         if (jsContent != null) {
             return String.format("<script type=\"text/javascript\">%s</script>", jsContent);
+        }
+        return null;
+    }
+
+    private String processCssContent(String path) {
+        String jsContent = IOUtil.getFileContent(path);
+        if (jsContent != null) {
+            return String.format("<style>%s</style>", jsContent);
         }
         return null;
     }

@@ -1,0 +1,32 @@
+html {
+    background: transparent;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-track-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-3dlight-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-darkshadow-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-base-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-arrow-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-highlight-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-shadow-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-face-color: #7d7d7d;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#playerCanvas {
+    width: 0;
+    height: 0;
+    margin: 0 auto;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
