@@ -24,10 +24,5 @@ dependencies {
 patchPluginXml {
     sinceBuild customSinceBuild
     untilBuild customUntilBuild
-    changeNotes """
-<strong>Changes in version 1.0.0:</strong>
-<ul>
-    <li>Created SVGA support plugin for IntelliJ IDEA</li>
-</ul>
-"""
+    changeNotes customChangeNotes
 }
