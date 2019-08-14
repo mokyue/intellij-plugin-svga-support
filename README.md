@@ -1,6 +1,8 @@
 # `SVGA` Viewer Plugin Support For `IntelliJ IDEA`
 
-[`SVGA Homepage`](http://svga.io/en/index.html) | Language: [`中文`](README.zh.md)
+[`SVGA Homepage`](http://svga.io/en/index.html) | [`Language: 中文`](README.zh.md)
+
+![](https://plugins.jetbrains.com/files/12760/screenshot_20060.png)
 
 ## The Latest Animation Format
 SVGA is a cross platform animation format. Furthermore, SVGA is also a perfect solution for creating animation in cooperation with designers and developers. SVGA includes SVGAConverter and SVGAPlayer. Designers aim at the design of excellent visual effect and animation content, then export SVGA file by SVGAConverter. Developers use SVGAPlayer to play animation without extra coding. SVGAPlayer is available in different platform including iOS, Android, Web. [`>> Getting Started`](http://svga.io/en/integrated.html)

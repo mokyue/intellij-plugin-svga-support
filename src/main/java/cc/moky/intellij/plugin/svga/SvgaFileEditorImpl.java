@@ -6,7 +6,7 @@ package cc.moky.intellij.plugin.svga;
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import cc.moky.intellij.plugin.util.IOUtil;
+import cc.moky.intellij.plugin.util.SvgaDataProcessor;
 import chrriis.dj.nativeswing.NSComponentOptions;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
@@ -22,25 +22,14 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBColor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
 
 final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor {
 
     private static final String NAME = "SVGA File Editor";
-    private static final String CSS_SCRIPT_STUFF = "{CSS_STUFF}";
-    private static final String JS_SCRIPT_STUFF = "{JS_SCRIPT_STUFF}";
-    private static final String SVGA_DATA_STUFF = "{SVGA_DATA_STUFF}";
-    private static final String BACKGROUND_COLOR_STUFF = "#{BACKGROUND_COLOR_STUFF}";
     private final VirtualFile mFile;
 
     SvgaFileEditorImpl(@NotNull Project project, @NotNull VirtualFile file) {
@@ -81,66 +70,8 @@ final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor 
                 }
             }
         });
-        browser.setHTMLContent(processHTMLContent());
+        browser.setHTMLContent(SvgaDataProcessor.processSvgaData(mFile));
         return browser;
-    }
-
-    private String processHTMLContent() {
-        String htmlContent = IOUtil.getFileContent("htm/player.htm");
-        if (htmlContent != null) {
-            String cssContent = processCssContent("htm/player.css");
-            if (cssContent != null) {
-                htmlContent = htmlContent.replace(CSS_SCRIPT_STUFF, cssContent);
-            }
-            String jsContent = String.format("%s\n%s\n%s", processJsContent("js/jszip.min.js"),
-                    processJsContent("js/svga.min.js"), processJsContent("js/main.js"));
-            htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, jsContent);
-            Color themeBgColor = JBColor.background().brighter();
-            htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
-                    themeBgColor.getRed(), themeBgColor.getGreen(), themeBgColor.getBlue()));
-            htmlContent = htmlContent.replace(SVGA_DATA_STUFF, String.format("data:svga/2.0;base64,%s", fileToBase64(mFile.getPath())));
-        }
-        return htmlContent;
-    }
-
-    private String processJsContent(String path) {
-        String jsContent = IOUtil.getFileContent(path);
-        if (jsContent != null) {
-            return String.format("<script type=\"text/javascript\">%s</script>", jsContent);
-        }
-        return null;
-    }
-
-    private String processCssContent(String path) {
-        String jsContent = IOUtil.getFileContent(path);
-        if (jsContent != null) {
-            return String.format("<style>%s</style>", jsContent);
-        }
-        return null;
-    }
-
-    private String fileToBase64(String path) {
-        String base64 = null;
-        InputStream in = null;
-        try {
-            File file = new File(path);
-            in = new FileInputStream(file);
-            byte[] bytes = new byte[(int) file.length()];
-            if (in.read(bytes) != -1) {
-                base64 = Base64.getEncoder().encodeToString(bytes);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return base64;
     }
 
     @Override
