@@ -40,7 +40,8 @@ final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor 
     @Override
     public JComponent getComponent() {
         NativeInterface.open();
-        JWebBrowser browser = new JWebBrowser(NSComponentOptions.destroyOnFinalization());
+        JWebBrowser browser = new JWebBrowser(NSComponentOptions.destroyOnFinalization(),
+                NSComponentOptions.constrainVisibility());
         browser.setMenuBarVisible(false);
         browser.setBarsVisible(false);
         browser.setLocationBarVisible(false);
