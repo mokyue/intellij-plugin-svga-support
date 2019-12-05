@@ -1,8 +1,8 @@
 # `IntelliJ IDEA`插件`SVGA`浏览支持
 
-[`SVGA官网`](http://svga.io/index.html) | [`Language: English`](README.md)
-
 ![](https://plugins.jetbrains.com/files/12760/screenshot_20060.png)
+
+[`SVGA官网`](http://svga.io/index.html) | [`Language: English`](README.md)
 
 ## 全新的动画格式
 SVGA 是一种跨平台的开源动画格式，同时兼容 iOS / Android / Web。SVGA 除了使用简单，性能卓越，同时让动画开发分工明确，各自专注各自的领域，大大减少动画交互的沟通成本，提升开发效率。动画设计师专注动画设计，通过工具输出svga动画文件，提供给开发工程师在集成 svga player 之后直接使用。动画开发从未如此简单！[`>> 立即使用`](http://svga.io/integrated.html)
