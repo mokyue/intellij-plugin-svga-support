@@ -23,5 +23,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           file: "build/distributions/*.zip"
-          tags: true
+          tags: false
           draft: true
+          verbose: true
