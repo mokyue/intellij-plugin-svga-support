@@ -1,4 +1,4 @@
-name: Java CI
+name: Plugin CI
 
 on: [push]
 
@@ -17,3 +17,11 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew buildPlugin
+      - name: Upload the artifact
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "build/distributions/*.zip"
+          tags: true
+          draft: true
