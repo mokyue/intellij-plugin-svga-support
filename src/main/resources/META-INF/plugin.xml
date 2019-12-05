@@ -27,6 +27,7 @@
                             serviceImplementation="cc.moky.intellij.plugin.svga.SvgaFileTypeManagerImp"/>
         <fileEditorProvider implementation="cc.moky.intellij.plugin.svga.SvgaFileEditorProvider"/>
         <fileTypeFactory implementation="cc.moky.intellij.plugin.svga.SvgaFileTypeFactory"/>
-        <fileType implementationClass="cc.moky.intellij.plugin.svga.SvgaFileType" name="SVGA Animation"/>
+        <fileType name="SVGA Animation" implementationClass="cc.moky.intellij.plugin.svga.SvgaFileType"
+                  fieldName="INSTANCE" language="SVGA" extensions="svga"/>
     </extensions>
 </idea-plugin>
