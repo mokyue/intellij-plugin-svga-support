@@ -1,6 +1,6 @@
 # `IntelliJ IDEA`插件`SVGA`浏览支持
 
-![](https://plugins.jetbrains.com/files/12760/screenshot_20060.png)
+![](https://plugins.jetbrains.com/files/12760/screenshot_20843.png)
 
 [`SVGA官网`](http://svga.io/index.html) | [`Language: English`](README.md)
 

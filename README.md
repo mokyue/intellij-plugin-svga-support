@@ -1,6 +1,6 @@
 # `SVGA` Viewer Plugin Support For `IntelliJ IDEA`
 
-![](https://plugins.jetbrains.com/files/12760/screenshot_20060.png)
+![](https://plugins.jetbrains.com/files/12760/screenshot_20843.png)
 
 [`SVGA Homepage`](http://svga.io/en/index.html) | [`Language: 中文`](README.zh.md)
 
