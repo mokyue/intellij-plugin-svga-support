@@ -29,4 +29,5 @@ body {
     position: relative;
     top: 50%;
     transform: translateY(-50%);
+    background-image: url({BACKGROUND_IMAGE_STUFF});
 }

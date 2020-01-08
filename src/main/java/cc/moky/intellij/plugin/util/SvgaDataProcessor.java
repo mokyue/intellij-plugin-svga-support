@@ -26,6 +26,7 @@ public class SvgaDataProcessor {
     private static final String JS_SCRIPT_STUFF = "{JS_SCRIPT_STUFF}";
     private static final String SVGA_DATA_STUFF = "{SVGA_DATA_STUFF}";
     private static final String BACKGROUND_COLOR_STUFF = "#{BACKGROUND_COLOR_STUFF}";
+    private static final String BACKGROUND_IMAGE_STUFF = "{BACKGROUND_IMAGE_STUFF}";
 
     @NotNull
     public static String processSvgaData(VirtualFile file) {
@@ -49,15 +50,22 @@ public class SvgaDataProcessor {
             return null;
         }
         htmlContent = htmlContent.replace(CSS_SCRIPT_STUFF, processCss());
-        String jsContent = String.format("%s\n%s\n%s", processJs("js/jszip.min.js"),
-                processJs("js/svga.min.js"), processJs("js/main.js"));
-        htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, jsContent);
+        htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, buildJsContent());
         Color themeBgColor = JBColor.background().brighter();
         htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
                 themeBgColor.getRed(), themeBgColor.getGreen(), themeBgColor.getBlue()));
+        htmlContent = htmlContent.replace(BACKGROUND_IMAGE_STUFF, String.format("data:image/svg+xml;base64,%s",
+                resourceToBase64("img/backgroundImage.svg")));
         htmlContent = htmlContent.replace(SVGA_DATA_STUFF, String.format("data:svga/%s;base64,%s",
                 getSvgaVersion(path), fileToBase64(path)));
         return htmlContent;
+    }
+
+    @NotNull
+    private static String buildJsContent() {
+        return processJs("js/svga.min.js") + '\n' +
+                processJs("js/jszip.min.js") + '\n' +
+                processJs("js/main.js");
     }
 
     @NotNull
@@ -123,11 +131,12 @@ public class SvgaDataProcessor {
         return builder.toString();
     }
 
-    private static String fileToBase64(String path) {
+    @Nullable
+    private static String fileToBase64(String filePath) {
         String base64 = null;
         InputStream in = null;
         try {
-            File file = new File(path);
+            File file = new File(filePath);
             in = new FileInputStream(file);
             byte[] bytes = new byte[(int) file.length()];
             if (in.read(bytes) != -1) {
@@ -142,6 +151,30 @@ public class SvgaDataProcessor {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+        return base64;
+    }
+
+    @Nullable
+    private static String resourceToBase64(String resPath) {
+        String base64 = null;
+        InputStream in = IOUtil.getResourceAsStream(resPath);
+        if (in == null) {
+            return null;
+        }
+        try {
+            byte[] bytes = new byte[in.available()];
+            if (in.read(bytes) != -1) {
+                base64 = Base64.getEncoder().encodeToString(bytes);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
         return base64;

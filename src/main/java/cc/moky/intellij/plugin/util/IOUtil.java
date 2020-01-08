@@ -18,7 +18,7 @@ public class IOUtil {
         BufferedReader reader = null;
         try {
             StringBuilder buffer = new StringBuilder();
-            inputStream = IOUtil.class.getClassLoader().getResourceAsStream(fileName);
+            inputStream = getResourceAsStream(fileName);
             if (inputStream != null) {
                 reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 String line;
@@ -35,6 +35,11 @@ public class IOUtil {
             close(inputStream);
         }
         return null;
+    }
+
+    @Nullable
+    public static InputStream getResourceAsStream(String fileName) {
+        return IOUtil.class.getClassLoader().getResourceAsStream(fileName);
     }
 
     private static void close(Closeable closeable) {
