@@ -28,6 +28,6 @@
         <fileEditorProvider implementation="cc.moky.intellij.plugin.svga.SvgaFileEditorProvider"/>
         <fileTypeFactory implementation="cc.moky.intellij.plugin.svga.SvgaFileTypeFactory"/>
         <fileType name="SVGA Animation" implementationClass="cc.moky.intellij.plugin.svga.SvgaFileType"
-                  fieldName="INSTANCE" language="SVGA" extensions="svga"/>
+                  language="SVGA" extensions="svga"/>
     </extensions>
 </idea-plugin>
