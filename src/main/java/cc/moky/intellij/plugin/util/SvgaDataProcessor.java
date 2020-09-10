@@ -8,6 +8,7 @@ package cc.moky.intellij.plugin.util;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,8 +26,12 @@ public class SvgaDataProcessor {
     private static final String CSS_SCRIPT_STUFF = "{CSS_STUFF}";
     private static final String JS_SCRIPT_STUFF = "{JS_SCRIPT_STUFF}";
     private static final String SVGA_DATA_STUFF = "{SVGA_DATA_STUFF}";
+    private static final String FONT_FAMILY_STUFF = "{FONT_FAMILY_STUFF}";
+    private static final String FONT_COLOR_STUFF = "#{FONT_COLOR_STUFF}";
+    private static final String BORDER_COLOR_STUFF = "#{BORDER_COLOR_STUFF}";
     private static final String BACKGROUND_COLOR_STUFF = "#{BACKGROUND_COLOR_STUFF}";
     private static final String BACKGROUND_IMAGE_STUFF = "{BACKGROUND_IMAGE_STUFF}";
+    private static final String FILE_SIZE_STUFF = "{FILE_SIZE_STUFF}";
 
     @NotNull
     public static String processSvgaData(VirtualFile file) {
@@ -51,9 +56,17 @@ public class SvgaDataProcessor {
         }
         htmlContent = htmlContent.replace(CSS_SCRIPT_STUFF, processCss());
         htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, buildJsContent());
-        Color themeBgColor = JBColor.background().brighter();
+        htmlContent = htmlContent.replace(FILE_SIZE_STUFF, processFileSizeText(path));
+        Color borderColor = JBColor.border();
+        htmlContent = htmlContent.replace(BORDER_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
+                borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue()));
+        Color themeBgColor = JBColor.background();
         htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
                 themeBgColor.getRed(), themeBgColor.getGreen(), themeBgColor.getBlue()));
+        Color fontColor = JBColor.foreground();
+        htmlContent = htmlContent.replace(FONT_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
+                fontColor.getRed(), fontColor.getGreen(), fontColor.getBlue()));
+        htmlContent = htmlContent.replace(FONT_FAMILY_STUFF, UIUtil.getLabelFont().getFamily());
         htmlContent = htmlContent.replace(BACKGROUND_IMAGE_STUFF, String.format("data:image/svg+xml;base64,%s",
                 resourceToBase64("img/backgroundImage.svg")));
         htmlContent = htmlContent.replace(SVGA_DATA_STUFF, String.format("data:svga/%s;base64,%s",
@@ -112,6 +125,17 @@ public class SvgaDataProcessor {
             }
         }
         return value;
+    }
+
+    private static String processFileSizeText(String filePath) {
+        long length = new File(filePath).length();
+        if (length < 1024) {
+            return String.format("%sB", length);
+        } else if (length < 1048576) {
+            return String.format("%sK", Math.round(length * 1.0 / 1024 * 10) / 10.0);
+        } else {
+            return String.format("%sM", Math.round(length * 1.0 / 1048576 * 100) / 100.0);
+        }
     }
 
     @NotNull
