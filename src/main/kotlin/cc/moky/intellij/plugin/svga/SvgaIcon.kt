@@ -1,16 +1,18 @@
-package cc.moky.intellij.plugin.svga;
+package cc.moky.intellij.plugin.svga
 
 /*******************************************************************************
- * Created on: 2019/7/16 9:56
+ * Created on: 2023/2/7 14:49
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.util.IconLoader
 
-import javax.swing.*;
+internal class SvgaIcon {
 
-class SvgaIcon {
+    companion object {
 
-    static final Icon FILE = IconLoader.getIcon("/img/logo.png");
+        @JvmField
+        val FILE = IconLoader.getIcon("/img/logo.png")
+    }
 }

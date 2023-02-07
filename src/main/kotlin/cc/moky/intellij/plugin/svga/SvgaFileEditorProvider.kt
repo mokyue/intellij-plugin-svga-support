@@ -1,45 +1,39 @@
-package cc.moky.intellij.plugin.svga;
+package cc.moky.intellij.plugin.svga
 
 /*******************************************************************************
- * Created on: 2019/7/16 9:49
+ * Created on: 2023/2/7 19:09
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorPolicy;
-import com.intellij.openapi.fileEditor.FileEditorProvider;
-import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorPolicy
+import com.intellij.openapi.fileEditor.FileEditorProvider
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.annotations.NonNls
 
-final class SvgaFileEditorProvider implements FileEditorProvider, DumbAware {
+internal class SvgaFileEditorProvider : FileEditorProvider, DumbAware {
 
-    @NonNls
-    private static final String EDITOR_TYPE_ID = "svga";
+    companion object {
 
-    @Override
-    public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
-        return SvgaFileTypeManager.getInstance().isSvga(file);
+        private const val EDITOR_TYPE_ID: @NonNls String = "svga"
     }
 
-    @NotNull
-    @Override
-    public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
-        return new SvgaFileEditorImpl(project, file);
+    override fun accept(project: Project, file: VirtualFile): Boolean {
+        return file.fileType is SvgaFileType
     }
 
-    @NotNull
-    @Override
-    public String getEditorTypeId() {
-        return EDITOR_TYPE_ID;
+    override fun createEditor(project: Project, file: VirtualFile): FileEditor {
+        return SvgaFileEditorImpl(file)
     }
 
-    @NotNull
-    @Override
-    public FileEditorPolicy getPolicy() {
-        return FileEditorPolicy.HIDE_DEFAULT_EDITOR;
+    override fun getEditorTypeId(): String {
+        return EDITOR_TYPE_ID
+    }
+
+    override fun getPolicy(): FileEditorPolicy {
+        return FileEditorPolicy.HIDE_DEFAULT_EDITOR
     }
 }

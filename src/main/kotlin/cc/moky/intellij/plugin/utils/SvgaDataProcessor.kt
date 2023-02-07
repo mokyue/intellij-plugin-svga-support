@@ -1,206 +1,141 @@
-package cc.moky.intellij.plugin.util;
+package cc.moky.intellij.plugin.utils
 
 /*******************************************************************************
- * Created on: 2019/8/14 9:40
+ * Created on: 2023/2/7 19:07
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBColor;
-import com.intellij.util.ui.UIUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import cc.moky.intellij.plugin.utils.IOUtil.getFileContent
+import cc.moky.intellij.plugin.utils.IOUtil.getResourceAsStream
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.JBColor
+import com.intellij.util.ui.UIUtil
+import java.io.File
+import java.io.FileInputStream
+import java.util.*
+import kotlin.math.roundToLong
 
-import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
+object SvgaDataProcessor {
 
-public class SvgaDataProcessor {
+    private const val SVGA_V1 = "1.0"
+    private const val SVGA_V2 = "2.0"
+    private const val CSS_SCRIPT_STUFF = "{CSS_STUFF}"
+    private const val JS_SCRIPT_STUFF = "{JS_SCRIPT_STUFF}"
+    private const val SVGA_DATA_STUFF = "{SVGA_DATA_STUFF}"
+    private const val FONT_FAMILY_STUFF = "{FONT_FAMILY_STUFF}"
+    private const val FONT_COLOR_STUFF = "#{FONT_COLOR_STUFF}"
+    private const val BORDER_COLOR_STUFF = "#{BORDER_COLOR_STUFF}"
+    private const val BACKGROUND_COLOR_STUFF = "#{BACKGROUND_COLOR_STUFF}"
+    private const val BACKGROUND_IMAGE_STUFF = "{BACKGROUND_IMAGE_STUFF}"
+    private const val FILE_SIZE_STUFF = "{FILE_SIZE_STUFF}"
 
-    private static final String SVGA_V1 = "1.0";
-    private static final String SVGA_V2 = "2.0";
-    private static final String CSS_SCRIPT_STUFF = "{CSS_STUFF}";
-    private static final String JS_SCRIPT_STUFF = "{JS_SCRIPT_STUFF}";
-    private static final String SVGA_DATA_STUFF = "{SVGA_DATA_STUFF}";
-    private static final String FONT_FAMILY_STUFF = "{FONT_FAMILY_STUFF}";
-    private static final String FONT_COLOR_STUFF = "#{FONT_COLOR_STUFF}";
-    private static final String BORDER_COLOR_STUFF = "#{BORDER_COLOR_STUFF}";
-    private static final String BACKGROUND_COLOR_STUFF = "#{BACKGROUND_COLOR_STUFF}";
-    private static final String BACKGROUND_IMAGE_STUFF = "{BACKGROUND_IMAGE_STUFF}";
-    private static final String FILE_SIZE_STUFF = "{FILE_SIZE_STUFF}";
-
-    @NotNull
-    public static String processSvgaData(VirtualFile file) {
-        if (file == null) {
-            return "";
-        }
-        if (!file.exists()) {
-            return "";
-        }
-        String htmlContent = processHtml(file.getPath());
-        if (htmlContent == null) {
-            return "";
-        }
-        return htmlContent;
+    @JvmStatic
+    fun processSvgaData(file: VirtualFile): String {
+        return if (file.exists()) (processHtml(file.path) ?: "") else ""
     }
 
-    @Nullable
-    private static String processHtml(String path) {
-        String htmlContent = IOUtil.getFileContent("htm/player.htm");
-        if (htmlContent == null) {
-            return null;
+    private fun processHtml(path: String): String? {
+        var htmlContent = getFileContent("htm/player.htm") ?: return null
+        htmlContent = htmlContent.replace(CSS_SCRIPT_STUFF, processCss())
+        htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, buildJsContent())
+        htmlContent = htmlContent.replace(FILE_SIZE_STUFF, processFileSizeText(path))
+        val borderColor = JBColor.border()
+        htmlContent = htmlContent.replace(BORDER_COLOR_STUFF,
+                "rgb(${borderColor.red},${borderColor.green},${borderColor.blue})")
+        val themeBgColor = JBColor.background()
+        htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF,
+                "rgb(${themeBgColor.red},${themeBgColor.green},${themeBgColor.blue})")
+        val fontColor = JBColor.foreground()
+        htmlContent = htmlContent.replace(FONT_COLOR_STUFF,
+                "rgb(${fontColor.red},${fontColor.green},${fontColor.blue})")
+        htmlContent = htmlContent.replace(FONT_FAMILY_STUFF, UIUtil.getLabelFont().family)
+        htmlContent = htmlContent.replace(BACKGROUND_IMAGE_STUFF,
+                "data:image/svg+xml;base64,${resourceToBase64("img/backgroundImage.svg")}")
+        htmlContent = htmlContent.replace(SVGA_DATA_STUFF,
+                "data:svga/${getSvgaVersion(path)};base64,${fileToBase64(path)}")
+        return htmlContent
+    }
+
+    private fun buildJsContent(): String {
+        return """
+            ${processJs("js/svga.min.js")}
+            ${processJs("js/jszip.min.js")}
+            ${processJs("js/main.js")}
+        """.trimIndent()
+    }
+
+    private fun processJs(path: String): String {
+        val jsContent = getFileContent(path)
+        return if (jsContent != null) "<script type=\"text/javascript\">${jsContent}</script>" else ""
+    }
+
+    private fun processCss(): String {
+        val jsContent = getFileContent("htm/player.css")
+        return if (jsContent != null) "<style>${jsContent}</style>" else ""
+    }
+
+    private fun getSvgaVersion(path: String): String {
+        return if ("504B0304" == getFileHeader(path)) SVGA_V1 else SVGA_V2
+    }
+
+    private fun getFileHeader(path: String): String {
+        var value = ""
+        FileInputStream(path).use { inputStream ->
+            val b = ByteArray(4)
+            inputStream.read(b, 0, b.size)
+            value = bytesToHexString(b)
         }
-        htmlContent = htmlContent.replace(CSS_SCRIPT_STUFF, processCss());
-        htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, buildJsContent());
-        htmlContent = htmlContent.replace(FILE_SIZE_STUFF, processFileSizeText(path));
-        Color borderColor = JBColor.border();
-        htmlContent = htmlContent.replace(BORDER_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
-                borderColor.getRed(), borderColor.getGreen(), borderColor.getBlue()));
-        Color themeBgColor = JBColor.background();
-        htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
-                themeBgColor.getRed(), themeBgColor.getGreen(), themeBgColor.getBlue()));
-        Color fontColor = JBColor.foreground();
-        htmlContent = htmlContent.replace(FONT_COLOR_STUFF, String.format("rgb(%d,%d,%d)",
-                fontColor.getRed(), fontColor.getGreen(), fontColor.getBlue()));
-        htmlContent = htmlContent.replace(FONT_FAMILY_STUFF, UIUtil.getLabelFont().getFamily());
-        htmlContent = htmlContent.replace(BACKGROUND_IMAGE_STUFF, String.format("data:image/svg+xml;base64,%s",
-                resourceToBase64("img/backgroundImage.svg")));
-        htmlContent = htmlContent.replace(SVGA_DATA_STUFF, String.format("data:svga/%s;base64,%s",
-                getSvgaVersion(path), fileToBase64(path)));
-        return htmlContent;
+        return value
     }
 
-    @NotNull
-    private static String buildJsContent() {
-        return processJs("js/svga.min.js") + '\n' +
-                processJs("js/jszip.min.js") + '\n' +
-                processJs("js/main.js");
-    }
-
-    @NotNull
-    private static String processJs(String path) {
-        String jsContent = IOUtil.getFileContent(path);
-        if (jsContent != null) {
-            return String.format("<script type=\"text/javascript\">%s</script>", jsContent);
-        }
-        return "";
-    }
-
-    @NotNull
-    private static String processCss() {
-        String jsContent = IOUtil.getFileContent("htm/player.css");
-        if (jsContent != null) {
-            return String.format("<style>%s</style>", jsContent);
-        }
-        return "";
-    }
-
-    @NotNull
-    private static String getSvgaVersion(String path) {
-        return "504B0304".equals(getFileHeader(path)) ? SVGA_V1 : SVGA_V2;
-    }
-
-    @NotNull
-    private static String getFileHeader(String path) {
-        FileInputStream is = null;
-        String value = "";
-        try {
-            is = new FileInputStream(path);
-            byte[] b = new byte[4];
-            is.read(b, 0, b.length);
-            value = bytesToHexString(b);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return value;
-    }
-
-    private static String processFileSizeText(String filePath) {
-        long length = new File(filePath).length();
-        if (length < 1024) {
-            return String.format("%sB", length);
+    private fun processFileSizeText(filePath: String): String {
+        val length = File(filePath).length()
+        return if (length < 1024) {
+            "${length}B"
         } else if (length < 1048576) {
-            return String.format("%sK", Math.round(length * 1.0 / 1024 * 10) / 10.0);
+            "${(length * 1.0 / 1024 * 10).roundToLong() / 10.0}K"
         } else {
-            return String.format("%sM", Math.round(length * 1.0 / 1048576 * 100) / 100.0);
+            "${(length * 1.0 / 1048576 * 100).roundToLong() / 100.0}M"
         }
     }
 
-    @NotNull
-    private static String bytesToHexString(byte[] src) {
-        StringBuilder builder = new StringBuilder();
-        if (src == null || src.length <= 0) {
-            return builder.toString();
+    private fun bytesToHexString(src: ByteArray?): String {
+        val builder = StringBuilder()
+        if (src == null || src.isEmpty()) {
+            return builder.toString()
         }
-        String hv;
-        for (byte b : src) {
-            hv = Integer.toHexString(b & 0xFF).toUpperCase();
-            if (hv.length() < 2) {
-                builder.append(0);
+        var hv: String
+        for (b in src) {
+            hv = Integer.toHexString(b.toInt() and 0xFF).toUpperCase()
+            if (hv.length < 2) {
+                builder.append(0)
             }
-            builder.append(hv);
+            builder.append(hv)
         }
-        return builder.toString();
+        return builder.toString()
     }
 
-    @Nullable
-    private static String fileToBase64(String filePath) {
-        String base64 = null;
-        InputStream in = null;
-        try {
-            File file = new File(filePath);
-            in = new FileInputStream(file);
-            byte[] bytes = new byte[(int) file.length()];
-            if (in.read(bytes) != -1) {
-                base64 = Base64.getEncoder().encodeToString(bytes);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+    private fun fileToBase64(filePath: String): String {
+        var base64 = ""
+        val file = File(filePath)
+        FileInputStream(file).use { inputStream ->
+            val bytes = ByteArray(file.length().toInt())
+            if (inputStream.read(bytes) != -1) {
+                base64 = Base64.getEncoder().encodeToString(bytes)
             }
         }
-        return base64;
+        return base64
     }
 
-    @Nullable
-    private static String resourceToBase64(String resPath) {
-        String base64 = null;
-        InputStream in = IOUtil.getResourceAsStream(resPath);
-        if (in == null) {
-            return null;
-        }
-        try {
-            byte[] bytes = new byte[in.available()];
-            if (in.read(bytes) != -1) {
-                base64 = Base64.getEncoder().encodeToString(bytes);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+    private fun resourceToBase64(resPath: String): String {
+        var base64 = ""
+        getResourceAsStream(resPath)?.use { inputStream ->
+            val bytes = ByteArray(inputStream.available())
+            if (inputStream.read(bytes) != -1) {
+                base64 = Base64.getEncoder().encodeToString(bytes)
             }
         }
-        return base64;
+        return base64
     }
 }

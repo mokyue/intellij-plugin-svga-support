@@ -1,46 +1,35 @@
-package cc.moky.intellij.plugin.svga;
+package cc.moky.intellij.plugin.svga
 
 /*******************************************************************************
- * Created on: 2019/7/16 9:50
+ * Created on: 2023/2/7 14:52
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import com.intellij.openapi.fileTypes.LanguageFileType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.intellij.openapi.fileTypes.LanguageFileType
+import javax.swing.Icon
 
-import javax.swing.*;
+class SvgaFileType private constructor() : LanguageFileType(Svga.INSTANCE) {
 
-public class SvgaFileType extends LanguageFileType {
+    companion object {
 
-    static final SvgaFileType INSTANCE = new SvgaFileType();
-
-    private SvgaFileType() {
-        super(Svga.INSTANCE);
+        @JvmField
+        val INSTANCE = SvgaFileType()
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return "SVGA Animation";
+    override fun getName(): String {
+        return "SVGA File"
     }
 
-    @NotNull
-    @Override
-    public String getDescription() {
-        return "SVGA Animation";
+    override fun getDescription(): String {
+        return "SVGA animation file"
     }
 
-    @NotNull
-    @Override
-    public String getDefaultExtension() {
-        return "svga";
+    override fun getDefaultExtension(): String {
+        return "svga"
     }
 
-    @Nullable
-    @Override
-    public Icon getIcon() {
-        return SvgaIcon.FILE;
+    override fun getIcon(): Icon {
+        return SvgaIcon.FILE
     }
 }

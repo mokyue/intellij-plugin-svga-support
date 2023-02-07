@@ -1,19 +1,18 @@
-package cc.moky.intellij.plugin.svga;
+package cc.moky.intellij.plugin.svga
 
 /*******************************************************************************
- * Created on: 2019/7/16 9:47
+ * Created on: 2023/2/7 13:49
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import com.intellij.lang.Language;
+import com.intellij.lang.Language
 
-class Svga extends Language {
+internal class Svga private constructor() : Language("SVGA") {
 
-    private static final String ID = "SVGA";
-    static final Svga INSTANCE = new Svga();
+    companion object {
 
-    private Svga() {
-        super(ID);
+        @JvmField
+        val INSTANCE: Svga = Svga()
     }
 }

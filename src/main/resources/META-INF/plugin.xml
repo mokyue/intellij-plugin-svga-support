@@ -23,11 +23,11 @@
     <li>Cost-Effective - The smaller animation files, the higher performance animation play will provide, the more realistic animation effects will be.</li>
 </ul>]]></description>
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceInterface="cc.moky.intellij.plugin.svga.SvgaFileTypeManager"
-                            serviceImplementation="cc.moky.intellij.plugin.svga.SvgaFileTypeManagerImp"/>
         <fileEditorProvider implementation="cc.moky.intellij.plugin.svga.SvgaFileEditorProvider"/>
-        <fileTypeFactory implementation="cc.moky.intellij.plugin.svga.SvgaFileTypeFactory"/>
-        <fileType name="SVGA Animation" implementationClass="cc.moky.intellij.plugin.svga.SvgaFileType"
-                  language="SVGA" extensions="svga"/>
+        <fileType name="SVGA File"
+                  implementationClass="cc.moky.intellij.plugin.svga.SvgaFileType"
+                  fieldName="INSTANCE"
+                  language="SVGA"
+                  extensions="svga"/>
     </extensions>
 </idea-plugin>

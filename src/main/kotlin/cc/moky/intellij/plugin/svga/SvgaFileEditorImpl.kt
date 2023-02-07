@@ -1,143 +1,79 @@
-package cc.moky.intellij.plugin.svga;
+package cc.moky.intellij.plugin.svga
 
 /*******************************************************************************
- * Created on: 2019/7/16 9:48
+ * Created on: 2023/2/7 19:08
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import cc.moky.intellij.plugin.util.SvgaDataProcessor;
-import chrriis.dj.nativeswing.NSComponentOptions;
-import chrriis.dj.nativeswing.swtimpl.NativeInterface;
-import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
-import chrriis.dj.nativeswing.swtimpl.components.WebBrowserAdapter;
-import chrriis.dj.nativeswing.swtimpl.components.WebBrowserEvent;
-import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
-import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorLocation;
-import com.intellij.openapi.fileEditor.FileEditorState;
-import com.intellij.openapi.fileEditor.FileEditorStateLevel;
-import com.intellij.openapi.fileEditor.impl.text.TextEditorState;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.UserDataHolderBase;
-import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
+import cc.moky.intellij.plugin.utils.SvgaDataProcessor
+import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.ide.structureView.StructureViewBuilder
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorLocation
+import com.intellij.openapi.fileEditor.FileEditorState
+import com.intellij.openapi.fileEditor.FileEditorStateLevel
+import com.intellij.openapi.fileEditor.impl.text.TextEditorState
+import com.intellij.openapi.util.UserDataHolderBase
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.jcef.JBCefBrowser
+import java.beans.PropertyChangeListener
+import javax.swing.JComponent
 
-import javax.swing.*;
-import java.beans.PropertyChangeListener;
+internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHolderBase(), FileEditor {
 
-final class SvgaFileEditorImpl extends UserDataHolderBase implements FileEditor {
+    companion object {
 
-    private static final String NAME = "SVGA File Editor";
-    private final VirtualFile mFile;
-
-    SvgaFileEditorImpl(@NotNull Project project, @NotNull VirtualFile file) {
-        mFile = file;
+        private const val NAME = "SVGA File Editor"
     }
 
-    @NotNull
-    @Override
-    public JComponent getComponent() {
-        NativeInterface.open();
-        JWebBrowser browser = new JWebBrowser(NSComponentOptions.destroyOnFinalization(),
-                NSComponentOptions.constrainVisibility());
-        browser.setMenuBarVisible(false);
-        browser.setBarsVisible(false);
-        browser.setLocationBarVisible(false);
-        browser.setButtonBarVisible(false);
-        browser.setStatusBarVisible(false);
-        browser.setDefaultPopupMenuRegistered(false);
-        browser.setJavascriptEnabled(true);
-        browser.setVisible(false);
-        browser.addWebBrowserListener(new WebBrowserAdapter() {
-            @Override
-            public void loadingProgressChanged(WebBrowserEvent e) {
-                if (e == null) {
-                    return;
-                }
-                JWebBrowser browser = e.getWebBrowser();
-                if (browser == null) {
-                    return;
-                }
-                if (browser.getLoadingProgress() == 100) {
-                    if (!browser.isVisible()) {
-                        browser.setVisible(true);
-                    }
-                } else {
-                    if (browser.isVisible()) {
-                        browser.setVisible(false);
-                    }
-                }
-            }
-        });
-        browser.setHTMLContent(SvgaDataProcessor.processSvgaData(mFile));
-        return browser;
+    override fun getComponent(): JComponent {
+        val browser = JBCefBrowser()
+        browser.loadHTML(SvgaDataProcessor.processSvgaData(mFile))
+        return browser.component
     }
 
-    @Override
-    public JComponent getPreferredFocusedComponent() {
-        return null;
+    override fun getPreferredFocusedComponent(): JComponent? {
+        return null
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return NAME;
+    override fun getName(): String {
+        return NAME
     }
 
-    @NotNull
-    @Override
-    public FileEditorState getState(@NotNull FileEditorStateLevel level) {
-        return new TextEditorState();
+    override fun getFile(): VirtualFile {
+        return mFile
     }
 
-    @Override
-    public void setState(@NotNull FileEditorState state) {
+    override fun getState(level: FileEditorStateLevel): FileEditorState {
+        return TextEditorState()
     }
 
-    @Override
-    public boolean isModified() {
-        return false;
+    override fun setState(state: FileEditorState) {}
+
+    override fun isModified(): Boolean {
+        return false
     }
 
-    @Override
-    public boolean isValid() {
-        return mFile.isValid();
+    override fun isValid(): Boolean {
+        return mFile.isValid
     }
 
-    @Override
-    public void selectNotify() {
+    override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
+
+    override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
+
+    override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? {
+        return null
     }
 
-    @Override
-    public void deselectNotify() {
+    override fun getCurrentLocation(): FileEditorLocation? {
+        return null
     }
 
-    @Override
-    public void addPropertyChangeListener(@NotNull PropertyChangeListener listener) {
+    override fun getStructureViewBuilder(): StructureViewBuilder? {
+        return null
     }
 
-    @Override
-    public void removePropertyChangeListener(@NotNull PropertyChangeListener listener) {
-    }
-
-    @Override
-    public BackgroundEditorHighlighter getBackgroundHighlighter() {
-        return null;
-    }
-
-    @Override
-    public FileEditorLocation getCurrentLocation() {
-        return null;
-    }
-
-    @Override
-    public StructureViewBuilder getStructureViewBuilder() {
-        return null;
-    }
-
-    @Override
-    public void dispose() {
-    }
+    override fun dispose() {}
 }

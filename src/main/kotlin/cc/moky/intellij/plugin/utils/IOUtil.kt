@@ -1,54 +1,36 @@
-package cc.moky.intellij.plugin.util;
+package cc.moky.intellij.plugin.utils
 
 /*******************************************************************************
- * Created on: 2019/7/16 9:58
+ * Created on: 2023/2/7 16:48
  * Author: Moky
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import javax.annotation.Nullable;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
-public class IOUtil {
+object IOUtil {
 
-    @Nullable
-    public static String getFileContent(String fileName) {
-        InputStream inputStream = null;
-        BufferedReader reader = null;
-        try {
-            StringBuilder buffer = new StringBuilder();
-            inputStream = getResourceAsStream(fileName);
-            if (inputStream != null) {
-                reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                    buffer.append('\n');
+    @JvmStatic
+    fun getResourceAsStream(fileName: String): InputStream? {
+        return IOUtil::class.java.classLoader.getResourceAsStream(fileName)
+    }
+
+    @JvmStatic
+    fun getFileContent(fileName: String): String? {
+        getResourceAsStream(fileName)?.use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).use { reader ->
+                val buffer = StringBuilder()
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    line?.run { buffer.append(this) }
+                    buffer.append('\n')
                 }
-                return buffer.toString();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            close(reader);
-            close(inputStream);
-        }
-        return null;
-    }
-
-    @Nullable
-    public static InputStream getResourceAsStream(String fileName) {
-        return IOUtil.class.getClassLoader().getResourceAsStream(fileName);
-    }
-
-    private static void close(Closeable closeable) {
-        if (closeable != null) {
-            try {
-                closeable.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                return buffer.toString()
             }
         }
+        return null
     }
 }
