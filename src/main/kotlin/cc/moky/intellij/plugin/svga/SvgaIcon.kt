@@ -8,11 +8,8 @@ package cc.moky.intellij.plugin.svga
 
 import com.intellij.openapi.util.IconLoader
 
-internal class SvgaIcon {
+internal object SvgaIcon {
 
-    companion object {
-
-        @JvmField
-        val FILE = IconLoader.getIcon("/img/logo.svg")
-    }
+    @JvmField
+    val FILE = IconLoader.getIcon("/img/logo.svg", javaClass)
 }
