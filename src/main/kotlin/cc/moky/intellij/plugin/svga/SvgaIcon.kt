@@ -13,6 +13,6 @@ internal class SvgaIcon {
     companion object {
 
         @JvmField
-        val FILE = IconLoader.getIcon("/img/logo.png")
+        val FILE = IconLoader.getIcon("/img/logo.svg")
     }
 }

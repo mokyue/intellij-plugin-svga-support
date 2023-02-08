@@ -25,8 +25,10 @@ object IOUtil {
                 val buffer = StringBuilder()
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
-                    line?.run { buffer.append(this) }
-                    buffer.append('\n')
+                    line?.run {
+                        buffer.append(this)
+                        buffer.append('\n')
+                    }
                 }
                 return buffer.toString()
             }

@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
     <id>cc.moky.intellij.plugin.svga-support</id>
     <name>SVGA Support</name>
     <category>Viewer</category>

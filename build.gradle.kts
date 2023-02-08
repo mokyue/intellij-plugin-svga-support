@@ -1,6 +1,6 @@
 group = "cc.moky.intellij.plugin"
 version = "1.0.9"
-val customSinceBuild = "202."
+val customSinceBuild = "202"
 val customUntilBuild = "300.*"
 val customChangeNotes = """
 <strong>Changes in version 1.0.9:</strong>
@@ -86,12 +86,30 @@ tasks {
         untilBuild.set(customUntilBuild)
         changeNotes.set(customChangeNotes)
     }
+    buildSearchableOptions {
+        enabled = false
+    }
+    runIde {
+        autoReloadPlugins.set(true)
+    }
     signPlugin {
-        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
-        privateKey.set(System.getenv("PRIVATE_KEY"))
-        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
+        certificateChainFile.set(File("chain.crt"))
+        privateKeyFile.set(File("private.pem"))
+        val pwd = System.getenv("PRIVATE_KEY_PASSWORD")
+        if (pwd == null || pwd.isEmpty()) {
+            System.err.println("PRIVATE_KEY_PASSWORD is empty, please set the PRIVATE_KEY_PASSWORD environment variable!")
+        } else {
+            println("PRIVATE_KEY_PASSWORD: $pwd")
+        }
+        password.set(pwd)
     }
     publishPlugin {
-        token.set(System.getenv("PUBLISH_TOKEN"))
+        val tk = System.getenv("PUBLISH_TOKEN")
+        if (tk == null || tk.isEmpty()) {
+            System.err.println("PUBLISH_TOKEN is empty, please set the PUBLISH_TOKEN environment variable!")
+        } else {
+            println("PUBLISH_TOKEN: $tk")
+        }
+        token.set(tk)
     }
 }
