@@ -11,5 +11,5 @@ import com.intellij.openapi.util.IconLoader
 internal object SvgaIcon {
 
     @JvmField
-    val FILE = IconLoader.getIcon("/img/logo.svg", javaClass)
+    val FILE = IconLoader.getIcon("/img/svgaFileIcon.svg", javaClass)
 }
