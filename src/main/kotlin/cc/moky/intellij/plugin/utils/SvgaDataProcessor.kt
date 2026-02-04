@@ -41,19 +41,24 @@ object SvgaDataProcessor {
         htmlContent = htmlContent.replace(JS_SCRIPT_STUFF, buildJsContent())
         htmlContent = htmlContent.replace(FILE_SIZE_STUFF, processFileSizeText(path))
         val borderColor = JBColor.border()
-        htmlContent = htmlContent.replace(BORDER_COLOR_STUFF,
-                "rgb(${borderColor.red},${borderColor.green},${borderColor.blue})")
+        htmlContent = htmlContent.replace(
+            BORDER_COLOR_STUFF, "rgb(${borderColor.red},${borderColor.green},${borderColor.blue})"
+        )
         val themeBgColor = JBColor.background()
-        htmlContent = htmlContent.replace(BACKGROUND_COLOR_STUFF,
-                "rgb(${themeBgColor.red},${themeBgColor.green},${themeBgColor.blue})")
+        htmlContent = htmlContent.replace(
+            BACKGROUND_COLOR_STUFF, "rgb(${themeBgColor.red},${themeBgColor.green},${themeBgColor.blue})"
+        )
         val fontColor = JBColor.foreground()
-        htmlContent = htmlContent.replace(FONT_COLOR_STUFF,
-                "rgb(${fontColor.red},${fontColor.green},${fontColor.blue})")
+        htmlContent = htmlContent.replace(
+            FONT_COLOR_STUFF, "rgb(${fontColor.red},${fontColor.green},${fontColor.blue})"
+        )
         htmlContent = htmlContent.replace(FONT_FAMILY_STUFF, UIUtil.getLabelFont().family)
-        htmlContent = htmlContent.replace(BACKGROUND_IMAGE_STUFF,
-                "data:image/svg+xml;base64,${resourceToBase64("img/backgroundImage.svg")}")
-        htmlContent = htmlContent.replace(SVGA_DATA_STUFF,
-                "data:svga/${getSvgaVersion(path)};base64,${fileToBase64(path)}")
+        htmlContent = htmlContent.replace(
+            BACKGROUND_IMAGE_STUFF, "data:image/svg+xml;base64,${resourceToBase64("img/backgroundImage.svg")}"
+        )
+        htmlContent = htmlContent.replace(
+            SVGA_DATA_STUFF, "data:svga/${getSvgaVersion(path)};base64,${fileToBase64(path)}"
+        )
         return htmlContent
     }
 
@@ -100,6 +105,13 @@ object SvgaDataProcessor {
         }
     }
 
+    /**
+     * Converts a byte array to its hexadecimal string representation.
+     * Used to identify SVGA file version by checking the file header (magic bytes).
+     *
+     * @param src The byte array to convert
+     * @return Uppercase hexadecimal string representation
+     */
     private fun bytesToHexString(src: ByteArray?): String {
         val builder = StringBuilder()
         if (src == null || src.isEmpty()) {
@@ -107,7 +119,8 @@ object SvgaDataProcessor {
         }
         var hv: String
         for (b in src) {
-            hv = Integer.toHexString(b.toInt() and 0xFF).toUpperCase()
+            // Convert byte to hex and use uppercase() instead of deprecated toUpperCase()
+            hv = Integer.toHexString(b.toInt() and 0xFF).uppercase()
             if (hv.length < 2) {
                 builder.append(0)
             }

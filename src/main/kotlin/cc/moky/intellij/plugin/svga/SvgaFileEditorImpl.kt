@@ -20,21 +20,47 @@ import com.intellij.ui.jcef.JBCefBrowser
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
+/**
+ * FileEditor implementation for SVGA animation files.
+ * Uses JBCefBrowser to render SVGA animations in the IDE.
+ *
+ * Note: The browser instance is cached to prevent memory leaks.
+ * IntelliJ may call getComponent() multiple times (e.g., on tab switch),
+ * and creating a new JBCefBrowser each time would cause memory leaks.
+ */
 internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHolderBase(), FileEditor {
 
     companion object {
-
         private const val NAME = "SVGA File Editor"
     }
 
+    /**
+     * Cached JBCefBrowser instance to avoid memory leaks.
+     * Lazily initialized on first getComponent() call and reused for subsequent calls.
+     */
+    private var browser: JBCefBrowser? = null
+
+    /**
+     * Cached component reference for the browser.
+     * Initialized along with the browser instance.
+     */
+    private var browserComponent: JComponent? = null
+
     override fun getComponent(): JComponent {
-        val browser = JBCefBrowser()
-        browser.loadHTML(SvgaDataProcessor.processSvgaData(mFile))
-        return browser.component
+        // Return cached component if already initialized
+        browserComponent?.let { return it }
+
+        // Create and cache browser instance on first call
+        val newBrowser = JBCefBrowser()
+        newBrowser.loadHTML(SvgaDataProcessor.processSvgaData(mFile))
+        browser = newBrowser
+        browserComponent = newBrowser.component
+
+        return newBrowser.component
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return null
+        return browserComponent
     }
 
     override fun getName(): String {
@@ -75,5 +101,14 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
         return null
     }
 
-    override fun dispose() {}
+    /**
+     * Disposes the editor and releases all associated resources.
+     * This includes disposing the JBCefBrowser instance to free native resources.
+     */
+    override fun dispose() {
+        // Dispose browser to release native JCEF resources
+        browser?.dispose()
+        browser = null
+        browserComponent = null
+    }
 }

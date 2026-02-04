@@ -1,8 +1,17 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 group = "cc.moky.intellij.plugin"
-version = "1.0.9"
-val customSinceBuild = "202"
-val customUntilBuild = "300.*"
+version = "1.1.0"
+
 val customChangeNotes = """
+<strong>Changes in version 1.1.0:</strong>
+<ul>
+<li>Migrate to IntelliJ Platform Gradle Plugin 2.x</li>
+<li>Upgrade to Gradle 8.13 and JDK 17</li>
+<li>Update IDE compatibility range to 2022.3 - 2025.3</li>
+<li>Fix JBCefBrowser memory leak</li>
+<li>Fix deprecated Kotlin API usage</li>
+</ul>
 <strong>Changes in version 1.0.9:</strong>
 <ul>
 <li>Add Mac platform support for plugin.</li>
@@ -55,61 +64,75 @@ val customChangeNotes = """
 """.trimIndent()
 
 plugins {
-    id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.8.10"
-    id("org.jetbrains.intellij") version "1.12.0"
+    id("org.jetbrains.kotlin.jvm") version "2.0.21"
+    id("org.jetbrains.intellij.platform") version "2.11.0"
 }
 
 repositories {
     mavenCentral()
     google()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-//            https://github.com/JetBrains/gradle-intellij-plugin/
-intellij {
-    version.set("2020.2")
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity("2022.3")
+
+        pluginVerifier()
+        zipSigner()
+
+        testFramework(TestFrameworkType.Platform)
+    }
+}
+
+// Set the JVM compatibility versions
+kotlin {
+    jvmToolchain(17)
+}
+
+// Configure IntelliJ Platform Gradle Plugin
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
+intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild.set("223")
+            untilBuild.set("300.*")
+        }
+        changeNotes.set(customChangeNotes)
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
+        }
+        // Mute the TemplateWordInPluginId warning because this plugin was published
+        // to JetBrains Marketplace before this rule was introduced (2024-03-26).
+        // Changing the plugin ID would break updates for existing users.
+        freeArgs.addAll("-mute", "TemplateWordInPluginId")
+    }
+
+    signing {
+        certificateChainFile.set(file("chain.crt"))
+        privateKeyFile.set(file("private.pem"))
+        password.set(providers.environmentVariable("PRIVATE_KEY_PASSWORD"))
+    }
+
+    publishing {
+        token.set(providers.environmentVariable("PUBLISH_TOKEN"))
+    }
+
+    buildSearchableOptions.set(false)
 }
 
 tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "1.8"
-        targetCompatibility = "1.8"
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    patchPluginXml {
-        sinceBuild.set(customSinceBuild)
-        untilBuild.set(customUntilBuild)
-        changeNotes.set(customChangeNotes)
-    }
-    buildSearchableOptions {
-        enabled = false
-    }
     runIde {
-        autoReloadPlugins.set(true)
-    }
-    signPlugin {
-        certificateChainFile.set(File("chain.crt"))
-        privateKeyFile.set(File("private.pem"))
-        val pwd = System.getenv("PRIVATE_KEY_PASSWORD")
-        if (pwd == null || pwd.isEmpty()) {
-            System.err.println("PRIVATE_KEY_PASSWORD is empty, please set the PRIVATE_KEY_PASSWORD environment variable!")
-        } else {
-            println("PRIVATE_KEY_PASSWORD: $pwd")
+        autoReload.set(false) // Disable to avoid hot-reload-agent compatibility issues
+        // Exclude the problematic hot-reload-agent from JVM args
+        jvmArgumentProviders.removeIf {
+            it.toString().contains("hot-reload") || it.toString().contains("HotReload")
         }
-        password.set(pwd)
-    }
-    publishPlugin {
-        val tk = System.getenv("PUBLISH_TOKEN")
-        if (tk == null || tk.isEmpty()) {
-            System.err.println("PUBLISH_TOKEN is empty, please set the PUBLISH_TOKEN environment variable!")
-        } else {
-            println("PUBLISH_TOKEN: $tk")
-        }
-        token.set(tk)
     }
 }

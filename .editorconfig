@@ -1806,7 +1806,7 @@ ij_html_text_wrap = normal
 
 [{*.http,*.rest}]
 indent_size = 0
-ij_http request_call_parameters_wrap = normal
+ij_http_request_call_parameters_wrap = normal
 
 [{*.markdown,*.md}]
 ij_continuation_indent_size = 8
