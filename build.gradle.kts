@@ -1,7 +1,8 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 group = "cc.moky.intellij.plugin"
-version = "1.1.0"
+// Use VERSION_TAG from environment (CI), or fallback to default version (local dev)
+version = providers.environmentVariable("VERSION_TAG").orElse("0.0.1-beta1").get()
 
 val customChangeNotes = """
 <strong>Changes in version 1.1.0:</strong>
