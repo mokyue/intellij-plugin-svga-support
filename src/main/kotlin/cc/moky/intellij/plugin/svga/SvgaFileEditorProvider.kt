@@ -7,9 +7,8 @@ package cc.moky.intellij.plugin.svga
  *******************************************************************************/
 
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditor
@@ -19,6 +18,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.jcef.JBCefApp
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -101,6 +101,7 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
     /**
      * Opens the "Choose Boot Java Runtime for the IDE" dialog.
      * Tries multiple possible action IDs as different IDE versions may use different IDs.
+     * Uses ActionUtil.invokeAction() to properly invoke the action without violating API contracts.
      * Shows a fallback message if no action is found.
      */
     private fun openChooseBootRuntimeDialog() {
@@ -111,16 +112,22 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
             val action = actionManager.getAction(actionId)
             if (action != null) {
                 LOG.info("Found Choose Runtime action with ID: $actionId")
-                val event = AnActionEvent.createFromDataContext(
-                    "SvgaFileEditorProvider", Presentation(), DataContext.EMPTY_CONTEXT
-                )
-                action.actionPerformed(event)
-                return
+
+                // Get the IDE frame as the component context for the action
+                val frame = WindowManager.getInstance().findVisibleFrame()
+                if (frame != null) {
+                    // Use ActionUtil.invokeAction which is the recommended way to execute actions
+                    // Parameters: action, component, place, inputEvent, onDone
+                    ActionUtil.invokeAction(
+                        action, frame.rootPane, ActionPlaces.UNKNOWN, null, null
+                    )
+                    return
+                }
             }
         }
 
-        // No action found, show fallback message
-        LOG.warn("No Choose Runtime action found. Tried: ${CHOOSE_RUNTIME_ACTION_IDS.contentToString()}")
+        // No action found or no frame available, show fallback message
+        LOG.warn("No Choose Runtime action found or no frame available. Tried: ${CHOOSE_RUNTIME_ACTION_IDS.contentToString()}")
         Messages.showInfoMessage(FALLBACK_MESSAGE, "Manual Action Required")
     }
 
