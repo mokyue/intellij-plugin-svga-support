@@ -5,6 +5,11 @@ group = "cc.moky.intellij.plugin"
 version = providers.environmentVariable("VERSION_TAG").orElse("0.0.1-beta1").get()
 
 val customChangeNotes = """
+<strong>Changes in version 1.1.1:</strong>
+<ul>
+<li>Add JCEF support detection and user prompts to guide users to switch to JBR, which supports JCEF, when JCEF is unavailable.</li>
+<li>Improve IDE compatibility settings and remove the upper limit to support future versions.</li>
+</ul>
 <strong>Changes in version 1.1.0:</strong>
 <ul>
 <li>Migrate to IntelliJ Platform Gradle Plugin 2.x</li>
