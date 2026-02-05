@@ -65,7 +65,7 @@ val customChangeNotes = """
 """.trimIndent()
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "2.0.21"
+    id("org.jetbrains.kotlin.jvm") version "2.2.0"
     id("org.jetbrains.intellij.platform") version "2.11.0"
 }
 
@@ -78,13 +78,21 @@ repositories {
     }
 }
 
+// Set to true to use a custom IDE for development/testing
+val customIde = false
+
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2022.3")
+        // Use custom ide for development/testing (comment out for CI builds)
+        if (customIde) {
+            local("/Users/moky/Applications/Android Studio Koala Feature Drop 2024.1.2 Patch 1.app/Contents")
+        } else {
+            // Use recommended IDE for CI builds
+            intellijIdeaCommunity("2022.3")
+        }
 
         pluginVerifier()
         zipSigner()
-
         testFramework(TestFrameworkType.Platform)
     }
 }
@@ -100,7 +108,8 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild.set("223")
-            untilBuild.set("300.*")
+            // No upper limit - compatible with all future versions
+            untilBuild.set(provider { null })
         }
         changeNotes.set(customChangeNotes)
     }
@@ -131,6 +140,7 @@ intellijPlatform {
 tasks {
     runIde {
         autoReload.set(false) // Disable to avoid hot-reload-agent compatibility issues
+        maxHeapSize = "4096m"
         // Exclude the problematic hot-reload-agent from JVM args
         jvmArgumentProviders.removeIf {
             it.toString().contains("hot-reload") || it.toString().contains("HotReload")
