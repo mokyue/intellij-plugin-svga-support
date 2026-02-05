@@ -8,7 +8,6 @@ package cc.moky.intellij.plugin.svga
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditor
@@ -72,7 +71,7 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
         if (!JBCefApp.isSupported()) {
             // Show warning dialog only once per session
             if (jcefWarningShown.compareAndSet(false, true)) {
-                showJcefWarningDialog()
+                showJcefWarningDialog(project)
             }
             return true
         }
@@ -84,16 +83,18 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
      * Shows a warning dialog informing the user that JCEF is not available.
      * Provides a "Change JBR" button to open the JBR selection dialog.
      * Must be called on EDT.
+     *
+     * @param project The current project context, used for dialog positioning and action execution.
      */
-    private fun showJcefWarningDialog() {
+    private fun showJcefWarningDialog(project: Project) {
         // Ensure dialog is shown on EDT
         ApplicationManager.getApplication().invokeLater {
             val result = Messages.showOkCancelDialog(
-                DIALOG_MESSAGE, DIALOG_TITLE, BUTTON_CHANGE_JBR, BUTTON_CANCEL, Messages.getWarningIcon()
+                project, DIALOG_MESSAGE, DIALOG_TITLE, BUTTON_CHANGE_JBR, BUTTON_CANCEL, Messages.getWarningIcon()
             )
 
             if (result == Messages.OK) {
-                openChooseBootRuntimeDialog()
+                openChooseBootRuntimeDialog(project)
             }
         }
     }
@@ -101,10 +102,12 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
     /**
      * Opens the "Choose Boot Java Runtime for the IDE" dialog.
      * Tries multiple possible action IDs as different IDE versions may use different IDs.
-     * Uses ActionUtil.invokeAction() to properly invoke the action without violating API contracts.
+     * Uses ActionManager.tryToExecute() which is the non-deprecated API for executing actions.
      * Shows a fallback message if no action is found.
+     *
+     * @param project The current project context, used to get the correct IDE frame.
      */
-    private fun openChooseBootRuntimeDialog() {
+    private fun openChooseBootRuntimeDialog(project: Project) {
         val actionManager = ActionManager.getInstance()
 
         // Try each possible action ID
@@ -113,13 +116,13 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
             if (action != null) {
                 LOG.info("Found Choose Runtime action with ID: $actionId")
 
-                // Get the IDE frame as the component context for the action
-                val frame = WindowManager.getInstance().findVisibleFrame()
-                if (frame != null) {
-                    // Use ActionUtil.invokeAction which is the recommended way to execute actions
-                    // Parameters: action, component, place, inputEvent, onDone
-                    ActionUtil.invokeAction(
-                        action, frame.rootPane, ActionPlaces.UNKNOWN, null, null
+                // Get the project's IDE frame for proper context
+                val frame = WindowManager.getInstance().getFrame(project)
+                if (frame != null && frame.isShowing) {
+                    // Use ActionManager.tryToExecute() - the non-deprecated API for executing actions
+                    // Parameters: action, inputEvent, contextComponent, place, now
+                    actionManager.tryToExecute(
+                        action, null, frame.rootPane, ActionPlaces.MAIN_MENU, true
                     )
                     return
                 }
@@ -128,7 +131,7 @@ Please go to: Help → Find Action → type "Choose Runtime" and select a JetBra
 
         // No action found or no frame available, show fallback message
         LOG.warn("No Choose Runtime action found or no frame available. Tried: ${CHOOSE_RUNTIME_ACTION_IDS.contentToString()}")
-        Messages.showInfoMessage(FALLBACK_MESSAGE, "Manual Action Required")
+        Messages.showInfoMessage(project, FALLBACK_MESSAGE, "Manual Action Required")
     }
 
     /**
