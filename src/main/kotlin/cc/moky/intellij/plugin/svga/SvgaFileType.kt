@@ -9,13 +9,7 @@ package cc.moky.intellij.plugin.svga
 import com.intellij.openapi.fileTypes.LanguageFileType
 import javax.swing.Icon
 
-class SvgaFileType private constructor() : LanguageFileType(Svga.INSTANCE) {
-
-    companion object {
-
-        @JvmField
-        val INSTANCE = SvgaFileType()
-    }
+object SvgaFileType : LanguageFileType(Svga.INSTANCE) {
 
     /**
      * Returns the name of the file type. The name must be unique among all file types registered in the system.
