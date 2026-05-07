@@ -13,6 +13,8 @@ internal class StreamCefResourceHandler(
     private val contentLength: Int = -1
 ) : CefResourceHandlerAdapter() {
 
+    private var closed = false
+
     override fun processRequest(request: org.cef.network.CefRequest?, callback: CefCallback?): Boolean {
         callback?.Continue()
         return true
@@ -40,8 +42,13 @@ internal class StreamCefResourceHandler(
         bytesRead: IntRef?,
         callback: CefCallback?
     ): Boolean {
-        if (dataOut == null) return false
-        val read = stream.read(dataOut, 0, bytesToRead)
+        if (dataOut == null || closed) return false
+        val read = try {
+            stream.read(dataOut, 0, bytesToRead)
+        } catch (e: Exception) {
+            closeStream()
+            return false
+        }
         if (read <= 0) {
             closeStream()
             return false
@@ -55,6 +62,8 @@ internal class StreamCefResourceHandler(
     }
 
     private fun closeStream() {
+        if (closed) return
+        closed = true
         try {
             stream.close()
         } catch (_: Exception) {

@@ -27,11 +27,29 @@ internal class ThemeJsonResourceHandler : CefResourceRequestHandlerAdapter() {
         val border = JBColor.border()
         val bg = JBColor.background()
         val font = JBColor.foreground()
-        val fontFamily = UIUtil.getLabelFont().family.escapeJson()
-        return """{"borderColor":"rgb(${border.red},${border.green},${border.blue})","backgroundColor":"rgb(${bg.red},${bg.green},${bg.blue})","fontColor":"rgb(${font.red},${font.green},${font.blue})","fontFamily":"$fontFamily"}"""
+        val fontFamily = escapeJson(UIUtil.getLabelFont().family)
+        return buildString {
+            append("{")
+            append("\"borderColor\":\"rgb(${border.red},${border.green},${border.blue})\",")
+            append("\"backgroundColor\":\"rgb(${bg.red},${bg.green},${bg.blue})\",")
+            append("\"fontColor\":\"rgb(${font.red},${font.green},${font.blue})\",")
+            append("\"fontFamily\":\"$fontFamily\"")
+            append("}")
+        }
     }
 
-    private fun String.escapeJson(): String {
-        return replace("\\", "\\\\").replace("\"", "\\\"")
+    private fun escapeJson(value: String): String {
+        val sb = StringBuilder(value.length)
+        for (ch in value) {
+            when (ch) {
+                '"' -> sb.append("\\\"")
+                '\\' -> sb.append("\\\\")
+                '\n' -> sb.append("\\n")
+                '\r' -> sb.append("\\r")
+                '\t' -> sb.append("\\t")
+                else -> if (ch.code < 0x20) sb.append("\\u${ch.code.toString(16).padStart(4, '0')}") else sb.append(ch)
+            }
+        }
+        return sb.toString()
     }
 }

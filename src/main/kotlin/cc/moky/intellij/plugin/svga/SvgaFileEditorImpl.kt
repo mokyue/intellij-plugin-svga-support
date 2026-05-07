@@ -8,6 +8,7 @@ package cc.moky.intellij.plugin.svga
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.ide.structureView.StructureViewBuilder
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -16,6 +17,8 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorState
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.jcef.JBCefBrowser
+import org.cef.browser.CefBrowser
+import org.cef.handler.CefLoadHandlerAdapter
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -27,7 +30,7 @@ import javax.swing.JComponent
  * IntelliJ may call getComponent() multiple times (e.g., on tab switch),
  * and creating a new JBCefBrowser each time would cause memory leaks.
  */
-internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHolderBase(), FileEditor {
+internal class SvgaFileEditorImpl(private val virtualFile: VirtualFile) : UserDataHolderBase(), FileEditor {
 
     companion object {
         private const val NAME = "SVGA File Editor"
@@ -52,24 +55,25 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
         // Create and cache browser instance on first call
         val newBrowser = JBCefBrowser()
 
-        val handler = SvgaCefRequestHandler(mFile)
+        val handler = SvgaCefRequestHandler(virtualFile)
         newBrowser.jbCefClient.addRequestHandler(handler, newBrowser.cefBrowser)
 
         newBrowser.loadURL("${SvgaCefRequestHandler.BASE_URL}/index.html")
 
         browserComponent = newBrowser.component
 
-        /*
         // DevTools
-        newBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
-            override fun onLoadingStateChange(
-                cefBrowser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean
-            ) {
-                newBrowser.openDevtools()
-                newBrowser.jbCefClient.removeLoadHandler(this, newBrowser.cefBrowser)
-            }
-        }, newBrowser.cefBrowser)
-        */
+        val isDevMode = ApplicationManager.getApplication()?.isInternal == true
+        if (isDevMode) {
+            newBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+                override fun onLoadingStateChange(
+                    cefBrowser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean
+                ) {
+                    newBrowser.openDevtools()
+                    newBrowser.jbCefClient.removeLoadHandler(this, newBrowser.cefBrowser)
+                }
+            }, newBrowser.cefBrowser)
+        }
 
         browser = newBrowser
         return newBrowser.component
@@ -84,7 +88,7 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
     }
 
     override fun getFile(): VirtualFile {
-        return mFile
+        return virtualFile
     }
 
     override fun getState(level: FileEditorStateLevel): FileEditorState {
@@ -98,7 +102,7 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
     }
 
     override fun isValid(): Boolean {
-        return mFile.isValid
+        return virtualFile.isValid
     }
 
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}

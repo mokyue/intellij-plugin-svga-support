@@ -20,6 +20,7 @@ window.addEventListener(
 
 let fileInfoData = null;
 let currentThemeJson = "";
+let themePollingTimer = null;
 
 function applyTheme(theme) {
     var json = JSON.stringify(theme);
@@ -51,7 +52,6 @@ function fetchFileInfo() {
         })
         .then(function (info) {
             fileInfoData = info;
-            console.log("Fetch file info:", info);
         })
         .catch(function (e) {
             console.error("Failed to fetch file info:", e);
@@ -63,8 +63,15 @@ window.onThemeUpdate = function () {
 };
 
 function startThemePolling() {
-    setInterval(fetchTheme, 2000);
+    themePollingTimer = setInterval(fetchTheme, 2000);
 }
+
+window.addEventListener("beforeunload", function () {
+    if (themePollingTimer) {
+        clearInterval(themePollingTimer);
+        themePollingTimer = null;
+    }
+});
 
 function onPageLoaded() {
     fetchTheme();
@@ -73,7 +80,6 @@ function onPageLoaded() {
         let player = new SVGA.Player("#playerCanvas");
         let parser = new SVGA.Parser("#playerCanvas");
         parser.load("/file.svga", function (videoItem) {
-            console.log("Load svga:", videoItem);
             document.getElementById("playerCanvas").style.width = "".concat(videoItem.videoSize.width, "px");
             document.getElementById("playerCanvas").style.height = "".concat(videoItem.videoSize.height, "px");
             player.setVideoItem(videoItem);
