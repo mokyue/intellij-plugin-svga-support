@@ -6,7 +6,6 @@ package cc.moky.intellij.plugin.svga
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import cc.moky.intellij.plugin.utils.SvgaDataProcessor
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.openapi.fileEditor.FileEditor
@@ -52,10 +51,27 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
 
         // Create and cache browser instance on first call
         val newBrowser = JBCefBrowser()
-        newBrowser.loadHTML(SvgaDataProcessor.processSvgaData(mFile))
-        browser = newBrowser
+
+        val handler = SvgaCefRequestHandler(mFile)
+        newBrowser.jbCefClient.addRequestHandler(handler, newBrowser.cefBrowser)
+
+        newBrowser.loadURL("${SvgaCefRequestHandler.BASE_URL}/index.html")
+
         browserComponent = newBrowser.component
 
+        /*
+        // DevTools
+        newBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+            override fun onLoadingStateChange(
+                cefBrowser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean
+            ) {
+                newBrowser.openDevtools()
+                newBrowser.jbCefClient.removeLoadHandler(this, newBrowser.cefBrowser)
+            }
+        }, newBrowser.cefBrowser)
+        */
+
+        browser = newBrowser
         return newBrowser.component
     }
 

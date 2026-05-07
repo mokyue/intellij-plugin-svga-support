@@ -1,0 +1,4 @@
+settings.local.json
+/skills/openspec-*
+/commands/opsx/*
+/package.json

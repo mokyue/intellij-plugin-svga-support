@@ -7,7 +7,7 @@ html {
 }
 
 body {
-    background-color: #{BACKGROUND_COLOR_STUFF};
+    background-color: var(--background-color);
     overflow: hidden;
     width: 100%;
     height: 100%;
@@ -24,13 +24,13 @@ body {
     position: absolute;
     overflow-x: scroll;
     overflow-y: auto;
-    scrollbar-track-color: #{BACKGROUND_COLOR_STUFF};
-    scrollbar-3dlight-color: #{BACKGROUND_COLOR_STUFF};
-    scrollbar-darkshadow-color: #{BACKGROUND_COLOR_STUFF};
-    scrollbar-base-color: #{BACKGROUND_COLOR_STUFF};
-    scrollbar-arrow-color: #{BACKGROUND_COLOR_STUFF};
-    scrollbar-highlight-color: #{BACKGROUND_COLOR_STUFF};
-    scrollbar-shadow-color: #{BACKGROUND_COLOR_STUFF};
+    scrollbar-track-color: var(--background-color);
+    scrollbar-3dlight-color: var(--background-color);
+    scrollbar-darkshadow-color: var(--background-color);
+    scrollbar-base-color: var(--background-color);
+    scrollbar-arrow-color: var(--background-color);
+    scrollbar-highlight-color: var(--background-color);
+    scrollbar-shadow-color: var(--background-color);
     scrollbar-face-color: #7d7d7d;
 }
 
@@ -40,7 +40,7 @@ body {
     line-height: 30px;
     width: 100%;
     min-width: 700px;
-    background: #{BACKGROUND_COLOR_STUFF};
+    background: var(--background-color);
     position: fixed;
     top: 0;
 }
@@ -53,12 +53,12 @@ body {
     margin-left: 8px;
     margin-top: 8px;
     box-sizing: border-box;
-    border: 1px solid #{BORDER_COLOR_STUFF};
+    border: 1px solid var(--border-color);
 }
 
 #switch-bg-none {
     background-size: 12px 12px;
-    background-image: url({BACKGROUND_IMAGE_STUFF});
+    background-image: url(img/backgroundImage.svg);
 }
 
 #switch-bg-black {
@@ -70,19 +70,19 @@ body {
 }
 
 #switch-bg-blue {
-    background-color: #3498DB;
+    background-color: #3498db;
 }
 
 #switch-bg-green {
-    background-color: #30CC71;
+    background-color: #30cc71;
 }
 
 #switch-bg-yellow {
-    background-color: #F1C40D;
+    background-color: #f1c40d;
 }
 
 #switch-bg-red {
-    background-color: #C0392B;
+    background-color: #c0392b;
 }
 
 #infoDiv {
@@ -91,9 +91,9 @@ body {
     width: auto;
     position: absolute;
     right: 10px;
-    font-family: '{FONT_FAMILY_STUFF}', serif;
+    font-family: var(--font-family), serif;
     font-size: 12px;
-    color: #{FONT_COLOR_STUFF};
+    color: var(--font-color);
     cursor: default;
 }
 
@@ -103,7 +103,7 @@ body {
     margin: -7px auto;
     top: 50%;
     border: 1px solid #c0c0c0;
-    background-image: url({BACKGROUND_IMAGE_STUFF});
+    background-image: url(img/backgroundImage.svg);
     position: absolute;
     left: 50%;
     transform: translate(-50%, -50%);
