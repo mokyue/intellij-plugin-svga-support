@@ -5,6 +5,15 @@ group = "cc.moky.intellij.plugin"
 version = providers.environmentVariable("VERSION_TAG").orElse("0.0.1-beta1").get()
 
 val customChangeNotes = """
+<strong>Changes in version 1.1.4:</strong>
+<ul>
+<li>Migrate SVGA preview from inline HTML template to JCEF local HTTP resource serving, enabling streaming file loading and reducing memory usage.</li>
+<li>Add dynamic IDE theme synchronization — preview colors update automatically when switching Light/Dark themes.</li>
+<li>Add Content Security Policy (CSP) headers for enhanced security.</li>
+<li>Replace placeholder-based template processing with CSS variables and external resource references.</li>
+<li>Remove deprecated SvgaDataProcessor and IOUtil utilities.</li>
+<li>Raise minimum IDE version to 2023.1 (sinceBuild 231).</li>
+</ul>
 <strong>Changes in version 1.1.3:</strong>
 <ul>
 <li>Fix deprecated API usage.</li>
@@ -101,7 +110,7 @@ dependencies {
             local("/Users/moky/Applications/Android Studio Koala Feature Drop 2024.1.2 Patch 1.app/Contents")
         } else {
             // Use recommended IDE for CI builds
-            intellijIdeaCommunity("2022.3")
+            intellijIdeaCommunity("2023.1")
         }
 
         pluginVerifier()
@@ -120,7 +129,7 @@ kotlin {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild.set("223")
+            sinceBuild.set("231")
             // No upper limit - compatible with all future versions
             untilBuild.set(provider { null })
         }

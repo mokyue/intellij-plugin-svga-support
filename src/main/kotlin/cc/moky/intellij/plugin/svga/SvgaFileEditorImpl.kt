@@ -6,9 +6,10 @@ package cc.moky.intellij.plugin.svga
  * Mail: mokyue@163.com
  *******************************************************************************/
 
-import cc.moky.intellij.plugin.utils.SvgaDataProcessor
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.ide.structureView.StructureViewBuilder
+import com.intellij.ide.ui.LafManagerListener
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -17,6 +18,8 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorState
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.jcef.JBCefBrowser
+import org.cef.browser.CefBrowser
+import org.cef.handler.CefLoadHandlerAdapter
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -28,7 +31,7 @@ import javax.swing.JComponent
  * IntelliJ may call getComponent() multiple times (e.g., on tab switch),
  * and creating a new JBCefBrowser each time would cause memory leaks.
  */
-internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHolderBase(), FileEditor {
+internal class SvgaFileEditorImpl(private val virtualFile: VirtualFile) : UserDataHolderBase(), FileEditor {
 
     companion object {
         private const val NAME = "SVGA File Editor"
@@ -46,17 +49,67 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
      */
     private var browserComponent: JComponent? = null
 
+    /**
+     * Connection to the IDE theme change notification bus.
+     * Stored for cleanup in dispose().
+     */
+    private var themeBusConnection: com.intellij.util.messages.MessageBusConnection? = null
+
     override fun getComponent(): JComponent {
         // Return cached component if already initialized
         browserComponent?.let { return it }
 
         // Create and cache browser instance on first call
         val newBrowser = JBCefBrowser()
-        newBrowser.loadHTML(SvgaDataProcessor.processSvgaData(mFile))
-        browser = newBrowser
+
+        val handler = SvgaCefRequestHandler(virtualFile)
+        newBrowser.jbCefClient.addRequestHandler(handler, newBrowser.cefBrowser)
+
+        // Listen for IDE theme changes and push to the page
+        val app = ApplicationManager.getApplication()
+        val connection = app.messageBus.connect()
+        connection.subscribe(LafManagerListener.TOPIC, LafManagerListener {
+            pushThemeToPage(newBrowser)
+        })
+        themeBusConnection = connection
+
+        // Push initial theme after page loads
+        newBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+            override fun onLoadingStateChange(
+                cefBrowser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean
+            ) {
+                if (!isLoading) {
+                    pushThemeToPage(newBrowser)
+                    newBrowser.jbCefClient.removeLoadHandler(this, newBrowser.cefBrowser)
+                }
+            }
+        }, newBrowser.cefBrowser)
+
+        newBrowser.loadURL("${SvgaCefRequestHandler.BASE_URL}/index.html")
+
         browserComponent = newBrowser.component
 
+        // DevTools
+        val isDevMode = ApplicationManager.getApplication()?.isInternal == true
+        if (isDevMode) {
+            newBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+                override fun onLoadingStateChange(
+                    cefBrowser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean
+                ) {
+                    newBrowser.openDevtools()
+                    newBrowser.jbCefClient.removeLoadHandler(this, newBrowser.cefBrowser)
+                }
+            }, newBrowser.cefBrowser)
+        }
+
+        browser = newBrowser
         return newBrowser.component
+    }
+
+    private fun pushThemeToPage(browser: JBCefBrowser) {
+        val json = ThemeJsonBuilder.build()
+        val js = "if(window.onThemeUpdate)window.onThemeUpdate($json);"
+        browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -68,7 +121,7 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
     }
 
     override fun getFile(): VirtualFile {
-        return mFile
+        return virtualFile
     }
 
     override fun getState(level: FileEditorStateLevel): FileEditorState {
@@ -82,7 +135,7 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
     }
 
     override fun isValid(): Boolean {
-        return mFile.isValid
+        return virtualFile.isValid
     }
 
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
@@ -106,7 +159,8 @@ internal class SvgaFileEditorImpl(private val mFile: VirtualFile) : UserDataHold
      * This includes disposing the JBCefBrowser instance to free native resources.
      */
     override fun dispose() {
-        // Dispose browser to release native JCEF resources
+        themeBusConnection?.disconnect()
+        themeBusConnection = null
         browser?.dispose()
         browser = null
         browserComponent = null
