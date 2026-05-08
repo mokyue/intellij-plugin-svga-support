@@ -20,7 +20,6 @@ window.addEventListener(
 
 let fileInfoData = null;
 let currentThemeJson = "";
-let themePollingTimer = null;
 
 function applyTheme(theme) {
     var json = JSON.stringify(theme);
@@ -30,19 +29,6 @@ function applyTheme(theme) {
     document.documentElement.style.setProperty("--background-color", theme.backgroundColor);
     document.documentElement.style.setProperty("--font-color", theme.fontColor);
     document.documentElement.style.setProperty("--font-family", theme.fontFamily);
-}
-
-function fetchTheme() {
-    return fetch("/theme.json")
-        .then(function (r) {
-            return r.json();
-        })
-        .then(function (theme) {
-            applyTheme(theme);
-        })
-        .catch(function (e) {
-            console.error("Failed to fetch theme:", e);
-        });
 }
 
 function fetchFileInfo() {
@@ -58,24 +44,11 @@ function fetchFileInfo() {
         });
 }
 
-window.onThemeUpdate = function () {
-    fetchTheme();
+window.onThemeUpdate = function (theme) {
+    applyTheme(theme);
 };
 
-function startThemePolling() {
-    themePollingTimer = setInterval(fetchTheme, 2000);
-}
-
-window.addEventListener("beforeunload", function () {
-    if (themePollingTimer) {
-        clearInterval(themePollingTimer);
-        themePollingTimer = null;
-    }
-});
-
 function onPageLoaded() {
-    fetchTheme();
-    startThemePolling();
     fetchFileInfo().then(function () {
         let player = new SVGA.Player("#playerCanvas");
         let parser = new SVGA.Parser("#playerCanvas");

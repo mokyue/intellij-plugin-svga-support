@@ -19,7 +19,6 @@ internal class SvgaCefRequestHandler(
     }
 
     private val svgaFileHandler = SvgaFileResourceHandler(svgaFile)
-    private val themeHandler = ThemeJsonResourceHandler()
     private val fileInfoHandler = FileInfoResourceHandler(svgaFile, svgaFileHandler.detectSvgaVersion())
 
     private val staticHandlers = mapOf(
@@ -61,7 +60,6 @@ internal class SvgaCefRequestHandler(
     private fun route(path: String): CefResourceRequestHandler? {
         return when (path) {
             in staticHandlers -> staticHandlers[path]
-            "theme.json" -> themeHandler
             "file.svga" -> svgaFileHandler
             "file-info.json" -> fileInfoHandler
             else -> null
