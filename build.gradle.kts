@@ -5,6 +5,10 @@ group = "cc.moky.intellij.plugin"
 version = providers.environmentVariable("VERSION_TAG").orElse("0.0.1-beta1").get()
 
 val customChangeNotes = """
+<strong>Changes in version 1.1.5:</strong>
+<ul>
+<li>Add SVGA asset resource browsing functionality.</li>
+</ul>
 <strong>Changes in version 1.1.4:</strong>
 <ul>
 <li>Migrate SVGA preview from inline HTML template to JCEF local HTTP resource serving, enabling streaming file loading and reducing memory usage.</li>
