@@ -27,8 +27,11 @@ internal class SvgaCefRequestHandler(
         "player.css" to ClasspathResourceHandler("htm/player.css", "text/css"),
         "js/svga.min.js" to ClasspathResourceHandler("js/svga.min.js", "application/javascript"),
         "js/jszip.min.js" to ClasspathResourceHandler("js/jszip.min.js", "application/javascript"),
+        "js/highlight.min.js" to ClasspathResourceHandler("js/highlight.min.js", "application/javascript"),
         "js/main.js" to ClasspathResourceHandler("js/main.js", "application/javascript"),
         "img/backgroundImage.svg" to ClasspathResourceHandler("img/backgroundImage.svg", "image/svg+xml"),
+        "css/hljs-dark.min.css" to ClasspathResourceHandler("css/hljs-dark.min.css", "text/css"),
+        "css/hljs-light.min.css" to ClasspathResourceHandler("css/hljs-light.min.css", "text/css"),
     )
 
     override fun getResourceRequestHandler(
