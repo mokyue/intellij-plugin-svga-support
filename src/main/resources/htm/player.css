@@ -14,25 +14,10 @@ body {
     margin: 0;
     padding: 0;
     border: 0;
+    user-select: none;
 }
 
-#content-div {
-    width: 100%;
-    height: 100%;
-    margin: 30px auto;
-    padding: 0;
-    position: absolute;
-    overflow-x: scroll;
-    overflow-y: auto;
-    scrollbar-track-color: var(--background-color);
-    scrollbar-3dlight-color: var(--background-color);
-    scrollbar-darkshadow-color: var(--background-color);
-    scrollbar-base-color: var(--background-color);
-    scrollbar-arrow-color: var(--background-color);
-    scrollbar-highlight-color: var(--background-color);
-    scrollbar-shadow-color: var(--background-color);
-    scrollbar-face-color: #7d7d7d;
-}
+/* ── Top Bar ── */
 
 #topDiv {
     height: 30px;
@@ -43,6 +28,33 @@ body {
     background: var(--background-color);
     position: fixed;
     top: 0;
+    z-index: 10;
+}
+
+#tabBar {
+    float: left;
+    display: flex;
+    height: 100%;
+}
+
+.tab-btn {
+    font-family: var(--font-family), sans-serif;
+    font-size: 12px;
+    color: var(--font-color);
+    padding: 0 10px;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.tab-btn.tab-active {
+    border-bottom-color: var(--font-color);
+    background: var(--tab-active-bg);
+}
+
+#bgSwitchGroup {
+    float: left;
 }
 
 .switch-bg-btn {
@@ -91,10 +103,34 @@ body {
     width: auto;
     position: absolute;
     right: 10px;
-    font-family: var(--font-family), serif;
+    font-family: var(--font-family), sans-serif;
     font-size: 12px;
     color: var(--font-color);
     cursor: default;
+}
+
+/* ── Panel Switching ── */
+
+.panel {
+    display: none;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.panel.active {
+    display: block;
+}
+
+/* ── Player Panel ── */
+
+#content-div {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    overflow-x: scroll;
+    overflow-y: auto;
 }
 
 #playerCanvas {
@@ -107,4 +143,236 @@ body {
     position: absolute;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+/* ── Material Panel ── */
+
+#materialPanel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
+    border-top: 1px solid var(--border-color);
+}
+
+#materialPanel.active {
+    display: flex;
+}
+
+#materialLeft {
+    width: 60%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#materialPreview {
+    flex: 1 1 58%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+}
+
+#materialPreviewInner {
+    background-image: url(img/backgroundImage.svg);
+    border: 1px solid #c0c0c0;
+    flex-shrink: 0;
+}
+
+#materialPreviewImg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#materialJson {
+    flex: 1 1 32%;
+    min-height: 80px;
+    overflow: hidden;
+    border-top: 1px solid var(--border-color);
+    background: var(--background-color);
+    display: flex;
+    flex-direction: column;
+}
+
+#copyJsonBtn {
+    position: sticky;
+    float: right;
+    margin: 0;
+    padding: 4px 6px;
+    font-family: var(--font-family), sans-serif;
+    font-size: 10px;
+    color: var(--font-color);
+    background: var(--tab-active-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+#materialJson:hover #copyJsonBtn {
+    opacity: 1;
+}
+
+#copyJsonBtn:hover {
+    background: var(--scrollbar-thumb-color);
+}
+
+#copyJsonToast {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 6px 14px;
+    font-family: var(--font-family), sans-serif;
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+#copyJsonToast.visible {
+    opacity: 1;
+}
+
+#materialJson pre {
+    margin: 0;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+#materialJson code {
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+    font-family: var(--font-family), monospace;
+    font-size: 12px;
+    user-select: text;
+}
+
+#materialRight {
+    width: 40%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid var(--border-color);
+}
+
+.section-title {
+    font-family: var(--font-family), sans-serif;
+    font-size: 12px;
+    color: var(--font-color);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--tab-active-bg);
+    flex-shrink: 0;
+    text-align: center;
+}
+
+#memoryInfo {
+    text-align: center;
+}
+
+#imageKeyList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#imageKeyList li {
+    font-family: var(--font-family), sans-serif;
+    font-size: 12px;
+    color: var(--font-color);
+    padding: 6px 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+#imageKeyList li .image-key-index {
+    flex-shrink: 0;
+    text-align: right;
+    opacity: 0.4;
+    font-variant-numeric: tabular-nums;
+}
+
+#imageKeyList li .image-key-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#imageKeyList li .image-key-size {
+    flex-shrink: 0;
+    white-space: nowrap;
+    opacity: 0.6;
+}
+
+#imageKeyList li:nth-child(odd) {
+    background: var(--background-color);
+}
+
+#imageKeyList li:nth-child(even) {
+    background: var(--row-alt-bg);
+}
+
+#imageKeyList li.is-active {
+    border-left: 1px solid var(--font-color);
+    padding-left: 7px;
+}
+
+/* ── Custom Scrollbar ── */
+
+#content-div::-webkit-scrollbar,
+#materialJson code::-webkit-scrollbar,
+#imageKeyList::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+#content-div::-webkit-scrollbar-track,
+#materialJson code::-webkit-scrollbar-track,
+#imageKeyList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#content-div::-webkit-scrollbar-thumb,
+#materialJson code::-webkit-scrollbar-thumb,
+#imageKeyList::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    border-radius: 4px;
+    border: 2px solid var(--hljs-bg);
+}
+
+#content-div::-webkit-scrollbar-thumb:hover,
+#materialJson code::-webkit-scrollbar-thumb:hover,
+#imageKeyList::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover-color);
+}
+
+#content-div::-webkit-scrollbar-corner,
+#materialJson code::-webkit-scrollbar-corner,
+#imageKeyList::-webkit-scrollbar-corner {
+    background: transparent;
 }

@@ -9,31 +9,63 @@
         />
         <title>SVGA Player</title>
         <link rel="stylesheet" href="player.css" />
+        <link id="hljs-theme" rel="stylesheet" href="css/hljs-dark.min.css" />
         <style>
             :root {
                 --border-color: rgb(60, 60, 60);
                 --background-color: rgb(45, 45, 48);
                 --font-color: rgb(187, 187, 187);
                 --font-family: sans-serif;
+                --tab-active-bg: rgb(60, 60, 63);
+                --scrollbar-thumb-color: rgb(85, 85, 88);
+                --scrollbar-thumb-hover-color: rgb(105, 105, 108);
+                --hljs-bg: #282c34;
+                --row-alt-bg: rgb(53, 53, 56);
             }
         </style>
         <script src="js/jszip.min.js"></script>
         <script src="js/svga.min.js"></script>
+        <script src="js/highlight.min.js"></script>
         <script src="js/main.js"></script>
     </head>
-    <body onload="onPageLoaded()" oncontextmenu="return false;" onselectstart="return false;">
+    <body onload="onPageLoaded()" oncontextmenu="return false;">
         <div id="topDiv">
-            <div class="switch-bg-btn" id="switch-bg-none" onclick="onSwitchBackground(this)"></div>
-            <div class="switch-bg-btn" id="switch-bg-black" onclick="onSwitchBackground(this)"></div>
-            <div class="switch-bg-btn" id="switch-bg-white" onclick="onSwitchBackground(this)"></div>
-            <div class="switch-bg-btn" id="switch-bg-blue" onclick="onSwitchBackground(this)"></div>
-            <div class="switch-bg-btn" id="switch-bg-green" onclick="onSwitchBackground(this)"></div>
-            <div class="switch-bg-btn" id="switch-bg-yellow" onclick="onSwitchBackground(this)"></div>
-            <div class="switch-bg-btn" id="switch-bg-red" onclick="onSwitchBackground(this)"></div>
+            <div id="tabBar">
+                <div class="tab-btn tab-active" id="tabPlayer" onclick="onSwitchTab('player')">Preview</div>
+                <div class="tab-btn" id="tabMaterial" onclick="onSwitchTab('material')">Resource</div>
+            </div>
+            <div id="bgSwitchGroup">
+                <div class="switch-bg-btn" id="switch-bg-none" onclick="onSwitchBackground(this)"></div>
+                <div class="switch-bg-btn" id="switch-bg-black" onclick="onSwitchBackground(this)"></div>
+                <div class="switch-bg-btn" id="switch-bg-white" onclick="onSwitchBackground(this)"></div>
+                <div class="switch-bg-btn" id="switch-bg-blue" onclick="onSwitchBackground(this)"></div>
+                <div class="switch-bg-btn" id="switch-bg-green" onclick="onSwitchBackground(this)"></div>
+                <div class="switch-bg-btn" id="switch-bg-yellow" onclick="onSwitchBackground(this)"></div>
+                <div class="switch-bg-btn" id="switch-bg-red" onclick="onSwitchBackground(this)"></div>
+            </div>
             <div id="infoDiv"></div>
         </div>
-        <div id="content-div">
-            <div id="playerCanvas"></div>
+        <div id="playerPanel" class="panel active">
+            <div id="content-div">
+                <div id="playerCanvas"></div>
+            </div>
+        </div>
+        <div id="materialPanel" class="panel">
+            <div id="materialLeft">
+                <div id="materialPreview">
+                    <div id="materialPreviewInner">
+                        <img id="materialPreviewImg" />
+                    </div>
+                </div>
+                <div id="materialJson">
+                    <div id="jsonMetaTitle" class="section-title">JSON Metadata</div>
+                    <pre><div id="copyJsonToast">Copied to clipboard</div><code id="jsonDisplay" class="json"></code></pre>
+                </div>
+            </div>
+            <div id="materialRight">
+                <div id="memoryInfo" class="section-title"></div>
+                <ul id="imageKeyList"></ul>
+            </div>
         </div>
     </body>
 </html>

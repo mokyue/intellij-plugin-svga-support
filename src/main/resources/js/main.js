@@ -18,8 +18,11 @@ window.addEventListener(
     { passive: false },
 );
 
-let fileInfoData = null;
-let currentThemeJson = "";
+var fileInfoData = null;
+var currentThemeJson = "";
+var currentVideoItem = null;
+var materialMemoryBytes = 0;
+var copyToastTimer = null;
 
 function applyTheme(theme) {
     var json = JSON.stringify(theme);
@@ -29,6 +32,38 @@ function applyTheme(theme) {
     document.documentElement.style.setProperty("--background-color", theme.backgroundColor);
     document.documentElement.style.setProperty("--font-color", theme.fontColor);
     document.documentElement.style.setProperty("--font-family", theme.fontFamily);
+    document.documentElement.style.setProperty("--tab-active-bg", theme.tabActiveBg);
+    document.documentElement.style.setProperty("--scrollbar-thumb-color", theme.scrollbarThumbColor);
+    document.documentElement.style.setProperty("--scrollbar-thumb-hover-color", theme.scrollbarThumbHoverColor);
+    document.documentElement.style.setProperty("--row-alt-bg", theme.rowAltBg);
+    switchHljsTheme(theme.backgroundColor);
+    updateHljsBgColor();
+}
+
+function updateHljsBgColor() {
+    var el = document.querySelector("#materialJson .hljs");
+    if (!el) return;
+    var bg = getComputedStyle(el).backgroundColor;
+    document.documentElement.style.setProperty("--hljs-bg", bg);
+}
+
+function switchHljsTheme(bgColor) {
+    var link = document.getElementById("hljs-theme");
+    if (!link) return;
+    var rgb = bgColor.match(/\d+/g);
+    var brightness = rgb ? (parseInt(rgb[0]) + parseInt(rgb[1]) + parseInt(rgb[2])) / 3 : 0;
+    var isDark = brightness < 128;
+    var target = isDark ? "css/hljs-dark.min.css" : "css/hljs-light.min.css";
+    if (link.getAttribute("href") === target) return;
+    var newLink = document.createElement("link");
+    newLink.id = "hljs-theme";
+    newLink.rel = "stylesheet";
+    newLink.href = target;
+    newLink.onload = function () {
+        if (link.parentNode) link.parentNode.removeChild(link);
+        updateHljsBgColor();
+    };
+    link.parentNode.insertBefore(newLink, link.nextSibling);
 }
 
 function fetchFileInfo() {
@@ -50,14 +85,16 @@ window.onThemeUpdate = function (theme) {
 
 function onPageLoaded() {
     fetchFileInfo().then(function () {
-        let player = new SVGA.Player("#playerCanvas");
-        let parser = new SVGA.Parser("#playerCanvas");
+        var player = new SVGA.Player("#playerCanvas");
+        var parser = new SVGA.Parser("#playerCanvas");
         parser.load("/file.svga", function (videoItem) {
+            currentVideoItem = videoItem;
             document.getElementById("playerCanvas").style.width = "".concat(videoItem.videoSize.width, "px");
             document.getElementById("playerCanvas").style.height = "".concat(videoItem.videoSize.height, "px");
             player.setVideoItem(videoItem);
             player.startAnimation();
             processSvgaInfo(videoItem);
+            initMaterialView(videoItem);
         });
     });
 }
@@ -65,22 +102,138 @@ function onPageLoaded() {
 function onSwitchBackground(target) {
     document.getElementById("playerCanvas").style.backgroundImage = getComputedStyle(target, null).backgroundImage;
     document.getElementById("playerCanvas").style.backgroundColor = getComputedStyle(target, null).backgroundColor;
+    document.getElementById("materialPreviewInner").style.backgroundImage = getComputedStyle(
+        target,
+        null,
+    ).backgroundImage;
+    document.getElementById("materialPreviewInner").style.backgroundColor = getComputedStyle(
+        target,
+        null,
+    ).backgroundColor;
     if (target.id === "switch-bg-none") {
         document.getElementById("playerCanvas").style.borderWidth = "1px";
+        document.getElementById("materialPreviewInner").style.borderWidth = "1px";
     } else {
         document.getElementById("playerCanvas").style.borderWidth = "0";
+        document.getElementById("materialPreviewInner").style.borderWidth = "0";
     }
 }
 
+function onSwitchTab(tabName) {
+    var tabPlayer = document.getElementById("tabPlayer");
+    var tabMaterial = document.getElementById("tabMaterial");
+    var playerPanel = document.getElementById("playerPanel");
+    var materialPanel = document.getElementById("materialPanel");
+
+    if (tabName === "player") {
+        tabPlayer.className = "tab-btn tab-active";
+        tabMaterial.className = "tab-btn";
+        playerPanel.className = "panel active";
+        materialPanel.className = "panel";
+    } else {
+        tabPlayer.className = "tab-btn";
+        tabMaterial.className = "tab-btn tab-active";
+        playerPanel.className = "panel";
+        materialPanel.className = "panel active";
+    }
+}
+
+function initMaterialView(videoItem) {
+    materialMemoryBytes = 0;
+    var listEl = document.getElementById("imageKeyList");
+    var memoryEl = document.getElementById("memoryInfo");
+    var previewEl = document.getElementById("materialPreview");
+    var jsonEl = document.getElementById("jsonDisplay");
+    listEl.innerHTML = "";
+
+    var keys = Object.keys(videoItem.images);
+    if (keys.length === 0) {
+        memoryEl.textContent = "Memory: 0B";
+        document.getElementById("materialPreviewImg").removeAttribute("src");
+        document.getElementById("materialPreviewInner").style.width = "";
+        document.getElementById("materialPreviewInner").style.height = "";
+        jsonEl.textContent = "No image resources";
+        return;
+    }
+
+    var isFirst = true;
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var base64 = videoItem.images[key];
+        var size = getImageSizeFromBase64Data(base64);
+        materialMemoryBytes += size.width * size.height * 4;
+
+        var li = document.createElement("li");
+        li.setAttribute("data-imageid", key);
+        var indexSpan = document.createElement("span");
+        indexSpan.className = "image-key-index";
+        indexSpan.textContent = i;
+        var keySpan = document.createElement("span");
+        keySpan.className = "image-key-name";
+        keySpan.textContent = key;
+        var sizeSpan = document.createElement("span");
+        sizeSpan.className = "image-key-size";
+        sizeSpan.textContent = size.width + "x" + size.height;
+        li.appendChild(indexSpan);
+        li.appendChild(keySpan);
+        li.appendChild(sizeSpan);
+        if (isFirst) {
+            li.className = "is-active";
+            showMaterialPreview(base64, size);
+            isFirst = false;
+        }
+        li.addEventListener("click", onImageKeyClick);
+        listEl.appendChild(li);
+    }
+
+    memoryEl.textContent = "Image List";
+
+    var meta = {
+        version: videoItem.version,
+        FPS: videoItem.FPS,
+        frames: videoItem.frames,
+        videoSize: videoItem.videoSize,
+    };
+    jsonEl.textContent = JSON.stringify(meta, null, 2);
+    hljs.highlightElement(jsonEl);
+    appendCopyButton(jsonEl);
+    updateHljsBgColor();
+}
+
+function onImageKeyClick(e) {
+    var target = e.currentTarget;
+    var imageId = target.getAttribute("data-imageid");
+    if (!currentVideoItem || !currentVideoItem.images[imageId]) return;
+
+    var base64 = currentVideoItem.images[imageId];
+    var size = getImageSizeFromBase64Data(base64);
+    showMaterialPreview(base64, size);
+
+    var items = document.getElementById("imageKeyList").getElementsByTagName("li");
+    for (var i = 0; i < items.length; i++) {
+        items[i].className = "";
+    }
+    target.className = "is-active";
+}
+
+function showMaterialPreview(base64, size) {
+    var innerEl = document.getElementById("materialPreviewInner");
+    var imgEl = document.getElementById("materialPreviewImg");
+    innerEl.style.width = size.width + "px";
+    innerEl.style.height = size.height + "px";
+    imgEl.src = "data:image/png;base64," + base64;
+}
+
 function processSvgaInfo(videoItem) {
-    let bc = 0;
-    for (let key in videoItem.images) {
+    var bc = 0;
+    for (var key in videoItem.images) {
         if (videoItem.images.hasOwnProperty(key)) {
-            let n = getImageSizeFromBase64Data(videoItem.images[key]);
+            var n = getImageSizeFromBase64Data(videoItem.images[key]);
             bc += n.width * n.height * 4;
         }
     }
-    let fileSize = fileInfoData && fileInfoData.fileSize ? fileInfoData.fileSize : "";
+    var fileSize = fileInfoData && fileInfoData.fileSize ? fileInfoData.fileSize : "";
+    var imageCount = currentVideoItem && currentVideoItem.images ? Object.keys(currentVideoItem.images).length : 0;
     document.getElementById("infoDiv").innerHTML =
         videoItem.videoSize.width +
         "x" +
@@ -91,6 +244,8 @@ function processSvgaInfo(videoItem) {
         videoItem.FPS +
         "\xa0\xa0Frames:\xa0" +
         videoItem.frames +
+        "\xa0\xa0Images: " +
+        imageCount +
         "\xa0\xa0Memory: " +
         processFileSizeText(bc) +
         "\xa0\xa0File: " +
@@ -98,7 +253,7 @@ function processSvgaInfo(videoItem) {
 }
 
 function getImageSizeFromBase64Data(base64) {
-    let dec = window.atob(base64),
+    var dec = window.atob(base64),
         length = dec.length,
         array = new Uint8Array(new ArrayBuffer(length)),
         i;
@@ -114,4 +269,45 @@ function processFileSizeText(bc) {
     } else {
         return Math.round(((bc * 1.0) / 1048576) * 100) / 100.0 + "M";
     }
+}
+
+function onCopyJson() {
+    var el = document.getElementById("jsonDisplay");
+    if (!el || !el.textContent) return;
+    var text = el.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopyToast);
+    } else {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showCopyToast();
+    }
+}
+
+function appendCopyButton(codeEl) {
+    var existing = document.getElementById("copyJsonBtn");
+    if (existing) existing.remove();
+    var btn = document.createElement("button");
+    btn.id = "copyJsonBtn";
+    btn.title = "Copy JSON";
+    btn.textContent = "Copy";
+    btn.onclick = onCopyJson;
+    codeEl.insertBefore(btn, codeEl.firstChild);
+}
+
+function showCopyToast() {
+    var toast = document.getElementById("copyJsonToast");
+    if (!toast) return;
+    if (copyToastTimer) clearTimeout(copyToastTimer);
+    toast.classList.add("visible");
+    copyToastTimer = setTimeout(function () {
+        toast.classList.remove("visible");
+        copyToastTimer = null;
+    }, 2000);
 }
