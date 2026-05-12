@@ -1,7 +1,7 @@
 package cc.moky.intellij.plugin.svga
 
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.ui.JBColor
-import com.intellij.util.ui.UIUtil
 
 internal object ThemeJsonBuilder {
 
@@ -9,7 +9,8 @@ internal object ThemeJsonBuilder {
         val border = JBColor.border()
         val bg = JBColor.background()
         val font = deriveColor(JBColor.foreground(), 60)
-        val fontFamily = escapeJson(UIUtil.getLabelFont().family)
+        val fontFamily = FontUtil.getEffectiveUIFont().family
+        val fontFamilyMono = EditorColorsManager.getInstance().globalScheme.editorFontName
         val tabActiveBg = deriveColor(bg, 15)
         val hoverBg = deriveColor(bg, 25)
         val scrollbarThumbColor = deriveColor(bg, 40)
@@ -21,6 +22,7 @@ internal object ThemeJsonBuilder {
             append("\"backgroundColor\":\"rgb(${bg.red},${bg.green},${bg.blue})\",")
             append("\"fontColor\":\"rgb(${font.red},${font.green},${font.blue})\",")
             append("\"fontFamily\":\"$fontFamily\",")
+            append("\"fontFamilyMono\":\"$fontFamilyMono\",")
             append("\"tabActiveBg\":\"rgb(${tabActiveBg.red},${tabActiveBg.green},${tabActiveBg.blue})\",")
             append("\"hoverBg\":\"rgb(${hoverBg.red},${hoverBg.green},${hoverBg.blue})\",")
             append("\"scrollbarThumbColor\":\"rgb(${scrollbarThumbColor.red},${scrollbarThumbColor.green},${scrollbarThumbColor.blue})\",")
@@ -36,20 +38,5 @@ internal object ThemeJsonBuilder {
         val g = if (brightness < 128) minOf(color.green + offset, 255) else maxOf(color.green - offset, 0)
         val b = if (brightness < 128) minOf(color.blue + offset, 255) else maxOf(color.blue - offset, 0)
         return java.awt.Color(r, g, b)
-    }
-
-    private fun escapeJson(value: String): String {
-        val sb = StringBuilder(value.length)
-        for (ch in value) {
-            when (ch) {
-                '"' -> sb.append("\\\"")
-                '\\' -> sb.append("\\\\")
-                '\n' -> sb.append("\\n")
-                '\r' -> sb.append("\\r")
-                '\t' -> sb.append("\\t")
-                else -> if (ch.code < 0x20) sb.append("\\u${ch.code.toString(16).padStart(4, '0')}") else sb.append(ch)
-            }
-        }
-        return sb.toString()
     }
 }

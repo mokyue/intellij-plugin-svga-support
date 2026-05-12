@@ -32,6 +32,7 @@ function applyTheme(theme) {
     document.documentElement.style.setProperty("--background-color", theme.backgroundColor);
     document.documentElement.style.setProperty("--font-color", theme.fontColor);
     document.documentElement.style.setProperty("--font-family", theme.fontFamily);
+    document.documentElement.style.setProperty("--font-family-mono", theme.fontFamilyMono);
     document.documentElement.style.setProperty("--tab-active-bg", theme.tabActiveBg);
     document.documentElement.style.setProperty("--scrollbar-thumb-color", theme.scrollbarThumbColor);
     document.documentElement.style.setProperty("--scrollbar-thumb-hover-color", theme.scrollbarThumbHoverColor);
