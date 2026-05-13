@@ -90,8 +90,9 @@ function onPageLoaded() {
         var parser = new SVGA.Parser("#playerCanvas");
         parser.load("/file.svga", function (videoItem) {
             currentVideoItem = videoItem;
-            document.getElementById("playerCanvas").style.width = "".concat(videoItem.videoSize.width, "px");
-            document.getElementById("playerCanvas").style.height = "".concat(videoItem.videoSize.height, "px");
+            var canvas = document.getElementById("playerCanvas");
+            canvas.style.width = videoItem.videoSize.width + "px";
+            canvas.style.height = videoItem.videoSize.height + "px";
             player.setVideoItem(videoItem);
             player.startAnimation();
             processSvgaInfo(videoItem);
@@ -142,20 +143,35 @@ function onSwitchTab(tabName) {
 function initMaterialView(videoItem) {
     materialMemoryBytes = 0;
     var listEl = document.getElementById("imageKeyList");
-    var memoryEl = document.getElementById("memoryInfo");
-    var previewEl = document.getElementById("materialPreview");
     var jsonEl = document.getElementById("jsonDisplay");
+    var keys = Object.keys(videoItem.images);
     listEl.innerHTML = "";
 
-    var keys = Object.keys(videoItem.images);
+    var meta = {
+        version: videoItem.version,
+        fps: videoItem.FPS,
+        frames: videoItem.frames,
+        images: keys.length,
+        videoSize: videoItem.videoSize,
+    };
+    jsonEl.textContent = JSON.stringify(meta, null, 2);
+    hljs.highlightElement(jsonEl);
+    appendCopyButton(jsonEl);
+    updateHljsBgColor();
+
     if (keys.length === 0) {
-        memoryEl.textContent = "Memory: 0B";
         document.getElementById("materialPreviewImg").removeAttribute("src");
-        document.getElementById("materialPreviewInner").style.width = "";
-        document.getElementById("materialPreviewInner").style.height = "";
-        jsonEl.textContent = "No image resources";
+        document.getElementById("materialPreviewInner").style.display = "none";
+        document.getElementById("materialPreviewEmpty").style.display = "flex";
+        document.getElementById("imageKeyList").style.display = "none";
+        document.getElementById("imageKeyListEmpty").style.display = "flex";
         return;
     }
+
+    document.getElementById("materialPreviewInner").style.display = "";
+    document.getElementById("materialPreviewEmpty").style.display = "none";
+    document.getElementById("imageKeyList").style.display = "";
+    document.getElementById("imageKeyListEmpty").style.display = "none";
 
     var isFirst = true;
     for (var i = 0; i < keys.length; i++) {
@@ -186,19 +202,6 @@ function initMaterialView(videoItem) {
         li.addEventListener("click", onImageKeyClick);
         listEl.appendChild(li);
     }
-
-    memoryEl.textContent = "Image List";
-
-    var meta = {
-        version: videoItem.version,
-        FPS: videoItem.FPS,
-        frames: videoItem.frames,
-        videoSize: videoItem.videoSize,
-    };
-    jsonEl.textContent = JSON.stringify(meta, null, 2);
-    hljs.highlightElement(jsonEl);
-    appendCopyButton(jsonEl);
-    updateHljsBgColor();
 }
 
 function onImageKeyClick(e) {
