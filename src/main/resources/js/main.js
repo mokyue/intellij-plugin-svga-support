@@ -22,6 +22,7 @@ var fileInfoData = null;
 var currentThemeJson = "";
 var currentVideoItem = null;
 var materialMemoryBytes = 0;
+var currentJsonText = "";
 var copyToastTimer = null;
 
 function applyTheme(theme) {
@@ -145,16 +146,23 @@ function initMaterialView(videoItem) {
     var listEl = document.getElementById("imageKeyList");
     var jsonEl = document.getElementById("jsonDisplay");
     var keys = Object.keys(videoItem.images);
+    var sprites = Object.keys(videoItem.sprites);
+    var audios = Object.keys(videoItem.audios);
+    var fileSizeB = fileInfoData ? fileInfoData.fileSizeB : 0;
     listEl.innerHTML = "";
 
     var meta = {
         version: videoItem.version,
         fps: videoItem.FPS,
+        fileSize: fileSizeB,
         frames: videoItem.frames,
         images: keys.length,
+        sprites: sprites.length,
+        audios: audios.length,
         videoSize: videoItem.videoSize,
     };
-    jsonEl.textContent = JSON.stringify(meta, null, 2);
+    currentJsonText = JSON.stringify(meta, null, 2);
+    jsonEl.textContent = currentJsonText;
     hljs.highlightElement(jsonEl);
     appendCopyButton(jsonEl);
     updateHljsBgColor();
@@ -276,14 +284,12 @@ function processFileSizeText(bc) {
 }
 
 function onCopyJson() {
-    var el = document.getElementById("jsonDisplay");
-    if (!el || !el.textContent) return;
-    var text = el.textContent;
+    if (!currentJsonText) return;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(showCopyToast);
+        navigator.clipboard.writeText(currentJsonText).then(showCopyToast);
     } else {
         var ta = document.createElement("textarea");
-        ta.value = text;
+        ta.value = currentJsonText;
         ta.style.position = "fixed";
         ta.style.left = "-9999px";
         document.body.appendChild(ta);
