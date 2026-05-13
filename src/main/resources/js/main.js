@@ -21,7 +21,7 @@ window.addEventListener(
 var fileInfoData = null;
 var currentThemeJson = "";
 var currentVideoItem = null;
-var materialMemoryBytes = 0;
+var currentJsonText = "";
 var copyToastTimer = null;
 
 function applyTheme(theme) {
@@ -32,6 +32,7 @@ function applyTheme(theme) {
     document.documentElement.style.setProperty("--background-color", theme.backgroundColor);
     document.documentElement.style.setProperty("--font-color", theme.fontColor);
     document.documentElement.style.setProperty("--font-family", theme.fontFamily);
+    document.documentElement.style.setProperty("--font-family-mono", theme.fontFamilyMono);
     document.documentElement.style.setProperty("--tab-active-bg", theme.tabActiveBg);
     document.documentElement.style.setProperty("--scrollbar-thumb-color", theme.scrollbarThumbColor);
     document.documentElement.style.setProperty("--scrollbar-thumb-hover-color", theme.scrollbarThumbHoverColor);
@@ -89,8 +90,9 @@ function onPageLoaded() {
         var parser = new SVGA.Parser("#playerCanvas");
         parser.load("/file.svga", function (videoItem) {
             currentVideoItem = videoItem;
-            document.getElementById("playerCanvas").style.width = "".concat(videoItem.videoSize.width, "px");
-            document.getElementById("playerCanvas").style.height = "".concat(videoItem.videoSize.height, "px");
+            var canvas = document.getElementById("playerCanvas");
+            canvas.style.width = videoItem.videoSize.width + "px";
+            canvas.style.height = videoItem.videoSize.height + "px";
             player.setVideoItem(videoItem);
             player.startAnimation();
             processSvgaInfo(videoItem);
@@ -139,62 +141,71 @@ function onSwitchTab(tabName) {
 }
 
 function initMaterialView(videoItem) {
-    materialMemoryBytes = 0;
+    var materialMemoryBytes = 0;
     var listEl = document.getElementById("imageKeyList");
-    var memoryEl = document.getElementById("memoryInfo");
-    var previewEl = document.getElementById("materialPreview");
     var jsonEl = document.getElementById("jsonDisplay");
+    var keys = Object.keys(videoItem.images);
+    var sprites = Object.keys(videoItem.sprites);
+    var audios = Object.keys(videoItem.audios);
+    var fileSizeB = fileInfoData ? fileInfoData.fileSizeB : 0;
     listEl.innerHTML = "";
 
-    var keys = Object.keys(videoItem.images);
     if (keys.length === 0) {
-        memoryEl.textContent = "Memory: 0B";
         document.getElementById("materialPreviewImg").removeAttribute("src");
-        document.getElementById("materialPreviewInner").style.width = "";
-        document.getElementById("materialPreviewInner").style.height = "";
-        jsonEl.textContent = "No image resources";
-        return;
-    }
+        document.getElementById("materialPreviewInner").style.display = "none";
+        document.getElementById("materialPreviewEmpty").style.display = "flex";
+        document.getElementById("imageKeyList").style.display = "none";
+        document.getElementById("imageKeyListEmpty").style.display = "flex";
+    } else {
+        document.getElementById("materialPreviewInner").style.display = "";
+        document.getElementById("materialPreviewEmpty").style.display = "none";
+        document.getElementById("imageKeyList").style.display = "";
+        document.getElementById("imageKeyListEmpty").style.display = "none";
 
-    var isFirst = true;
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var base64 = videoItem.images[key];
-        var size = getImageSizeFromBase64Data(base64);
-        materialMemoryBytes += size.width * size.height * 4;
+        var isFirst = true;
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var base64 = videoItem.images[key];
+            var size = getImageSizeFromBase64Data(base64);
+            materialMemoryBytes += size.width * size.height * 4;
 
-        var li = document.createElement("li");
-        li.setAttribute("data-imageid", key);
-        var indexSpan = document.createElement("span");
-        indexSpan.className = "image-key-index";
-        indexSpan.textContent = i;
-        var keySpan = document.createElement("span");
-        keySpan.className = "image-key-name";
-        keySpan.textContent = key;
-        var sizeSpan = document.createElement("span");
-        sizeSpan.className = "image-key-size";
-        sizeSpan.textContent = size.width + "x" + size.height;
-        li.appendChild(indexSpan);
-        li.appendChild(keySpan);
-        li.appendChild(sizeSpan);
-        if (isFirst) {
-            li.className = "is-active";
-            showMaterialPreview(base64, size);
-            isFirst = false;
+            var li = document.createElement("li");
+            li.setAttribute("data-imageid", key);
+            var indexSpan = document.createElement("span");
+            indexSpan.className = "image-key-index";
+            indexSpan.textContent = i;
+            var keySpan = document.createElement("span");
+            keySpan.className = "image-key-name";
+            keySpan.textContent = key;
+            var sizeSpan = document.createElement("span");
+            sizeSpan.className = "image-key-size";
+            sizeSpan.textContent = size.width + "x" + size.height;
+            li.appendChild(indexSpan);
+            li.appendChild(keySpan);
+            li.appendChild(sizeSpan);
+            if (isFirst) {
+                li.className = "is-active";
+                showMaterialPreview(base64, size);
+                isFirst = false;
+            }
+            li.addEventListener("click", onImageKeyClick);
+            listEl.appendChild(li);
         }
-        li.addEventListener("click", onImageKeyClick);
-        listEl.appendChild(li);
     }
 
-    memoryEl.textContent = "Image List";
-
-    var meta = {
+    var metadata = {
         version: videoItem.version,
-        FPS: videoItem.FPS,
+        fps: videoItem.FPS,
+        fileSize: fileSizeB,
+        memory: materialMemoryBytes,
         frames: videoItem.frames,
+        images: keys.length,
+        sprites: sprites.length,
+        audios: audios.length,
         videoSize: videoItem.videoSize,
     };
-    jsonEl.textContent = JSON.stringify(meta, null, 2);
+    currentJsonText = JSON.stringify(metadata, null, 2);
+    jsonEl.textContent = currentJsonText;
     hljs.highlightElement(jsonEl);
     appendCopyButton(jsonEl);
     updateHljsBgColor();
@@ -272,14 +283,12 @@ function processFileSizeText(bc) {
 }
 
 function onCopyJson() {
-    var el = document.getElementById("jsonDisplay");
-    if (!el || !el.textContent) return;
-    var text = el.textContent;
+    if (!currentJsonText) return;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(showCopyToast);
+        navigator.clipboard.writeText(currentJsonText).then(showCopyToast);
     } else {
         var ta = document.createElement("textarea");
-        ta.value = text;
+        ta.value = currentJsonText;
         ta.style.position = "fixed";
         ta.style.left = "-9999px";
         document.body.appendChild(ta);

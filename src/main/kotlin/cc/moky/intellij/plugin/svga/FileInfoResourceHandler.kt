@@ -29,7 +29,7 @@ internal class FileInfoResourceHandler(
     private fun buildFileInfoJson(): String {
         val length = svgaFile.length
         val fileSizeText = formatFileSize(length)
-        return """{"fileSize":"$fileSizeText","svgaVersion":"$svgaVersion"}"""
+        return """{"fileSize":"$fileSizeText","fileSizeB":$length,"svgaVersion":"$svgaVersion"}"""
     }
 
     private fun formatFileSize(length: Long): String {

@@ -15,7 +15,7 @@
                 --border-color: rgb(60, 60, 60);
                 --background-color: rgb(45, 45, 48);
                 --font-color: rgb(187, 187, 187);
-                --font-family: sans-serif;
+                --font-family: Arial, sans-serif;
                 --tab-active-bg: rgb(60, 60, 63);
                 --scrollbar-thumb-color: rgb(85, 85, 88);
                 --scrollbar-thumb-hover-color: rgb(105, 105, 108);
@@ -47,24 +47,64 @@
         </div>
         <div id="playerPanel" class="panel active">
             <div id="content-div">
-                <div id="playerCanvas"></div>
+                <div id="playerCanvasWrapper">
+                    <div id="playerCanvas"></div>
+                </div>
             </div>
         </div>
         <div id="materialPanel" class="panel">
             <div id="materialLeft">
                 <div id="materialPreview">
-                    <div id="materialPreviewInner">
-                        <img id="materialPreviewImg" />
+                    <div id="materialPreviewContent">
+                        <div id="materialPreviewInner">
+                            <img id="materialPreviewImg" />
+                        </div>
+                    </div>
+                    <div id="materialPreviewEmpty" class="empty-state">
+                        <svg
+                            class="empty-state-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                            <path d="M10.73 13.27a3 3 0 0 0 4.24-4.24" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                        <span class="empty-state-text">No Preview</span>
                     </div>
                 </div>
                 <div id="materialJson">
-                    <div id="jsonMetaTitle" class="section-title">JSON Metadata</div>
+                    <div class="section-title">JSON Metadata</div>
                     <pre><div id="copyJsonToast">Copied to clipboard</div><code id="jsonDisplay" class="json"></code></pre>
                 </div>
             </div>
             <div id="materialRight">
-                <div id="memoryInfo" class="section-title"></div>
-                <ul id="imageKeyList"></ul>
+                <div class="section-title">Image List</div>
+                <div id="imageKeyListArea">
+                    <div id="imageKeyListEmpty" class="empty-state">
+                        <svg
+                            class="empty-state-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <path d="m21 15-5-5L5 21" />
+                            <line x1="2" y1="2" x2="22" y2="22" />
+                        </svg>
+                        <span class="empty-state-text">No Images</span>
+                    </div>
+                    <ul id="imageKeyList"></ul>
+                </div>
             </div>
         </div>
     </body>

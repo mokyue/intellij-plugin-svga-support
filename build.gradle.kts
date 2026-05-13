@@ -5,6 +5,15 @@ group = "cc.moky.intellij.plugin"
 version = providers.environmentVariable("VERSION_TAG").orElse("0.0.1-beta1").get()
 
 val customChangeNotes = """
+<strong>Changes in version 1.1.6:</strong>
+<ul>
+<li>Add FontUtil utility class to centralize UI font retrieval and introduce fontFamilyMono theme variable for monospace/regular font distinction.</li>
+<li>Refactor playerCanvas and materialPreview layout from absolute positioning to flexbox centering.</li>
+<li>Add visual empty state hints (No Preview / No Images) for material panel.</li>
+<li>Enhance metadata JSON with fileSize, memory, sprites, and audios fields.</li>
+<li>Optimize JSON copy functionality with text caching and improve scrollbar styling.</li>
+<li>Upgrade Gradle version from 9.4.0 to 9.5.0.</li>
+</ul>
 <strong>Changes in version 1.1.5:</strong>
 <ul>
 <li>Add SVGA asset resource browsing functionality.</li>

@@ -38,7 +38,7 @@ body {
 }
 
 .tab-btn {
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--font-family), Arial, sans-serif;
     font-size: 12px;
     color: var(--font-color);
     padding: 0 10px;
@@ -103,7 +103,7 @@ body {
     width: auto;
     position: absolute;
     right: 10px;
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--font-family), Arial, sans-serif;
     font-size: 12px;
     color: var(--font-color);
     cursor: default;
@@ -129,20 +129,20 @@ body {
     margin: 0;
     padding: 0;
     position: absolute;
-    overflow-x: scroll;
-    overflow-y: auto;
+    overflow: auto;
+}
+
+#playerCanvasWrapper {
+    display: inline-flex;
+    min-width: 100%;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
 #playerCanvas {
-    width: 0;
-    height: 0;
-    margin: -7px auto;
-    top: 50%;
     border: 1px solid #c0c0c0;
     background-image: url(img/backgroundImage.svg);
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 /* ── Material Panel ── */
@@ -172,10 +172,16 @@ body {
 #materialPreview {
     flex: 1 1 58%;
     min-height: 0;
+    overflow: auto;
+    position: relative;
+}
+
+#materialPreviewContent {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: auto;
+    min-height: 100%;
+    min-width: 100%;
 }
 
 #materialPreviewInner {
@@ -205,7 +211,7 @@ body {
     float: right;
     margin: 0;
     padding: 4px 6px;
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--font-family), Arial, sans-serif;
     font-size: 10px;
     color: var(--font-color);
     background: var(--tab-active-bg);
@@ -230,7 +236,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 6px 14px;
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--font-family), Arial, sans-serif;
     font-size: 12px;
     color: #fff;
     background: rgba(0, 0, 0, 0.7);
@@ -260,7 +266,7 @@ body {
     height: 100%;
     box-sizing: border-box;
     overflow: auto;
-    font-family: var(--font-family), monospace;
+    font-family: var(--font-family-mono), monospace;
     font-size: 12px;
     user-select: text;
 }
@@ -275,7 +281,7 @@ body {
 }
 
 .section-title {
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--font-family), Arial, sans-serif;
     font-size: 12px;
     color: var(--font-color);
     padding: 8px 12px;
@@ -283,10 +289,15 @@ body {
     background: var(--tab-active-bg);
     flex-shrink: 0;
     text-align: center;
+    white-space: nowrap;
+    z-index: 2;
 }
 
-#memoryInfo {
-    text-align: center;
+#imageKeyListArea {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    position: relative;
 }
 
 #imageKeyList {
@@ -298,7 +309,7 @@ body {
 }
 
 #imageKeyList li {
-    font-family: var(--font-family), sans-serif;
+    font-family: var(--font-family), Arial, sans-serif;
     font-size: 12px;
     color: var(--font-color);
     padding: 6px 8px;
@@ -345,6 +356,7 @@ body {
 /* ── Custom Scrollbar ── */
 
 #content-div::-webkit-scrollbar,
+#materialPreview::-webkit-scrollbar,
 #materialJson code::-webkit-scrollbar,
 #imageKeyList::-webkit-scrollbar {
     width: 8px;
@@ -352,27 +364,76 @@ body {
 }
 
 #content-div::-webkit-scrollbar-track,
+#materialPreview::-webkit-scrollbar-track,
 #materialJson code::-webkit-scrollbar-track,
 #imageKeyList::-webkit-scrollbar-track {
     background: transparent;
 }
 
 #content-div::-webkit-scrollbar-thumb,
+#materialPreview::-webkit-scrollbar-thumb,
 #materialJson code::-webkit-scrollbar-thumb,
 #imageKeyList::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb-color);
     border-radius: 4px;
+}
+
+#materialJson code::-webkit-scrollbar-thumb {
     border: 2px solid var(--hljs-bg);
 }
 
+#content-div::-webkit-scrollbar-thumb,
+#materialPreview::-webkit-scrollbar-thumb,
+#imageKeyList::-webkit-scrollbar-thumb {
+    border: 2px solid var(--background-color);
+}
+
 #content-div::-webkit-scrollbar-thumb:hover,
+#materialPreview::-webkit-scrollbar-thumb:hover,
 #materialJson code::-webkit-scrollbar-thumb:hover,
 #imageKeyList::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover-color);
 }
 
 #content-div::-webkit-scrollbar-corner,
+#materialPreview::-webkit-scrollbar-corner,
 #materialJson code::-webkit-scrollbar-corner,
 #imageKeyList::-webkit-scrollbar-corner {
     background: transparent;
+}
+
+/* ── Empty States ── */
+
+.empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--font-color);
+    opacity: 0.35;
+    user-select: none;
+    pointer-events: none;
+}
+
+#materialPreviewEmpty,
+#imageKeyListEmpty {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.empty-state-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.empty-state-text {
+    font-family: var(--font-family), Arial, sans-serif;
+    font-size: 12px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
