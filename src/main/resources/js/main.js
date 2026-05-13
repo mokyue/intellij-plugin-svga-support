@@ -21,7 +21,6 @@ window.addEventListener(
 var fileInfoData = null;
 var currentThemeJson = "";
 var currentVideoItem = null;
-var materialMemoryBytes = 0;
 var currentJsonText = "";
 var copyToastTimer = null;
 
@@ -142,7 +141,7 @@ function onSwitchTab(tabName) {
 }
 
 function initMaterialView(videoItem) {
-    materialMemoryBytes = 0;
+    var materialMemoryBytes = 0;
     var listEl = document.getElementById("imageKeyList");
     var jsonEl = document.getElementById("jsonDisplay");
     var keys = Object.keys(videoItem.images);
@@ -151,65 +150,65 @@ function initMaterialView(videoItem) {
     var fileSizeB = fileInfoData ? fileInfoData.fileSizeB : 0;
     listEl.innerHTML = "";
 
-    var meta = {
-        version: videoItem.version,
-        fps: videoItem.FPS,
-        fileSize: fileSizeB,
-        frames: videoItem.frames,
-        images: keys.length,
-        sprites: sprites.length,
-        audios: audios.length,
-        videoSize: videoItem.videoSize,
-    };
-    currentJsonText = JSON.stringify(meta, null, 2);
-    jsonEl.textContent = currentJsonText;
-    hljs.highlightElement(jsonEl);
-    appendCopyButton(jsonEl);
-    updateHljsBgColor();
-
     if (keys.length === 0) {
         document.getElementById("materialPreviewImg").removeAttribute("src");
         document.getElementById("materialPreviewInner").style.display = "none";
         document.getElementById("materialPreviewEmpty").style.display = "flex";
         document.getElementById("imageKeyList").style.display = "none";
         document.getElementById("imageKeyListEmpty").style.display = "flex";
-        return;
-    }
+    } else {
+        document.getElementById("materialPreviewInner").style.display = "";
+        document.getElementById("materialPreviewEmpty").style.display = "none";
+        document.getElementById("imageKeyList").style.display = "";
+        document.getElementById("imageKeyListEmpty").style.display = "none";
 
-    document.getElementById("materialPreviewInner").style.display = "";
-    document.getElementById("materialPreviewEmpty").style.display = "none";
-    document.getElementById("imageKeyList").style.display = "";
-    document.getElementById("imageKeyListEmpty").style.display = "none";
+        var isFirst = true;
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var base64 = videoItem.images[key];
+            var size = getImageSizeFromBase64Data(base64);
+            materialMemoryBytes += size.width * size.height * 4;
 
-    var isFirst = true;
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var base64 = videoItem.images[key];
-        var size = getImageSizeFromBase64Data(base64);
-        materialMemoryBytes += size.width * size.height * 4;
-
-        var li = document.createElement("li");
-        li.setAttribute("data-imageid", key);
-        var indexSpan = document.createElement("span");
-        indexSpan.className = "image-key-index";
-        indexSpan.textContent = i;
-        var keySpan = document.createElement("span");
-        keySpan.className = "image-key-name";
-        keySpan.textContent = key;
-        var sizeSpan = document.createElement("span");
-        sizeSpan.className = "image-key-size";
-        sizeSpan.textContent = size.width + "x" + size.height;
-        li.appendChild(indexSpan);
-        li.appendChild(keySpan);
-        li.appendChild(sizeSpan);
-        if (isFirst) {
-            li.className = "is-active";
-            showMaterialPreview(base64, size);
-            isFirst = false;
+            var li = document.createElement("li");
+            li.setAttribute("data-imageid", key);
+            var indexSpan = document.createElement("span");
+            indexSpan.className = "image-key-index";
+            indexSpan.textContent = i;
+            var keySpan = document.createElement("span");
+            keySpan.className = "image-key-name";
+            keySpan.textContent = key;
+            var sizeSpan = document.createElement("span");
+            sizeSpan.className = "image-key-size";
+            sizeSpan.textContent = size.width + "x" + size.height;
+            li.appendChild(indexSpan);
+            li.appendChild(keySpan);
+            li.appendChild(sizeSpan);
+            if (isFirst) {
+                li.className = "is-active";
+                showMaterialPreview(base64, size);
+                isFirst = false;
+            }
+            li.addEventListener("click", onImageKeyClick);
+            listEl.appendChild(li);
         }
-        li.addEventListener("click", onImageKeyClick);
-        listEl.appendChild(li);
     }
+
+    var metadata = {
+        version: videoItem.version,
+        fps: videoItem.FPS,
+        fileSize: fileSizeB,
+        memory: materialMemoryBytes,
+        frames: videoItem.frames,
+        images: keys.length,
+        sprites: sprites.length,
+        audios: audios.length,
+        videoSize: videoItem.videoSize,
+    };
+    currentJsonText = JSON.stringify(metadata, null, 2);
+    jsonEl.textContent = currentJsonText;
+    hljs.highlightElement(jsonEl);
+    appendCopyButton(jsonEl);
+    updateHljsBgColor();
 }
 
 function onImageKeyClick(e) {
